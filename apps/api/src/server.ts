@@ -25,6 +25,10 @@ import {
 } from "./routes/organizations.js";
 
 import {
+  relationshipRoutes
+} from "./routes/relationships.js";
+
+import {
   productRoutes
 } from "./routes/products.js";
 
@@ -53,6 +57,10 @@ await app.register(
 
 await app.register(
   organizationRoutes
+);
+
+await app.register(
+  relationshipRoutes
 );
 
 await app.register(
