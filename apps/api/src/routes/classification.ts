@@ -1026,8 +1026,29 @@ export async function classificationRoutes(
         }
 
 
-        const textParts: string[] =
-          [];
+        /*
+         * Retrieval text must contain classification evidence,
+         * not catalogue/admin metadata.
+         *
+         * Product identity, brand, attribute keys and boolean
+         * flags remain preserved in input_payload/audit records,
+         * but they must not distort HS candidate ranking.
+         */
+
+        const textParts: string[] = [
+          description
+        ];
+
+
+        if (
+          product?.description
+        ) {
+
+          textParts.push(
+            product.description
+          );
+
+        }
 
 
         if (
@@ -1041,42 +1062,6 @@ export async function classificationRoutes(
         }
 
 
-        if (
-          product
-        ) {
-
-          textParts.push(
-            product.name
-          );
-
-          if (
-            product.brand
-          ) {
-
-            textParts.push(
-              product.brand
-            );
-
-          }
-
-          if (
-            product.description
-          ) {
-
-            textParts.push(
-              product.description
-            );
-
-          }
-
-        }
-
-
-        textParts.push(
-          description
-        );
-
-
         const mergedAttributes = {
 
           ...(product?.attributes ?? {}),
@@ -1086,45 +1071,104 @@ export async function classificationRoutes(
         };
 
 
+        /*
+         * Only human-readable string attribute values become
+         * retrieval evidence.
+         *
+         * Examples:
+         *   material: "activated carbon"  -> included
+         *   testRecord: true              -> excluded
+         *   internalCode: 123             -> excluded
+         *
+         * Attribute keys themselves are never classification
+         * evidence.
+         */
+
         for (
-          const [
-            key,
-            value
-          ]
-          of Object.entries(
+          const value
+          of Object.values(
             mergedAttributes
           )
         ) {
 
           if (
-            value === null
-            || value === undefined
+            typeof value
+            !== "string"
           ) {
 
             continue;
 
           }
 
-          textParts.push(
-            `${key} ${String(value)}`
-          );
+
+          const trimmedValue =
+            value.trim();
+
+
+          if (
+            trimmedValue
+          ) {
+
+            textParts.push(
+              trimmedValue
+            );
+
+          }
 
         }
 
 
+        /*
+         * Deduplicate case-insensitively so that an explicit
+         * description, stored description and attribute value
+         * containing the same evidence do not overweight it.
+         */
+
+        const seenTextParts =
+          new Set<string>();
+
+
         const inputText =
-          [
-            ...new Set(
-              textParts
-                .map(
-                  value =>
-                    value.trim()
-                )
-                .filter(Boolean)
+          textParts
+
+            .map(
+              value =>
+                value.trim()
             )
-          ].join(
-            " | "
-          );
+
+            .filter(Boolean)
+
+            .filter(
+              value => {
+
+                const dedupeKey =
+                  value.toLowerCase();
+
+
+                if (
+                  seenTextParts.has(
+                    dedupeKey
+                  )
+                ) {
+
+                  return false;
+
+                }
+
+
+                seenTextParts.add(
+                  dedupeKey
+                );
+
+
+                return true;
+
+              }
+            )
+
+            .join(
+              " | "
+            );
 
 
         const queryProfile =
@@ -1156,7 +1200,7 @@ export async function classificationRoutes(
                 $4,
                 $5::jsonb,
                 'pending',
-                'trigram_polarity_v1',
+                'trigram_polarity_v2',
                 $6,
                 $7::jsonb
             )
@@ -1357,7 +1401,7 @@ export async function classificationRoutes(
                 $5,
                 $6,
                 $7,
-                'trigram_polarity_v1',
+                'trigram_polarity_v2',
                 $8::jsonb
             )
             `,
@@ -1458,7 +1502,7 @@ export async function classificationRoutes(
               queryProfile.normalized,
 
             retrievalVersion:
-              "trigram_polarity_v1",
+              "trigram_polarity_v2",
 
             createdAt:
               classificationRequest.created_at
