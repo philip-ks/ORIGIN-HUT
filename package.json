@@ -1,0 +1,22 @@
+{
+  "name": "origin-hut",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Origin Hut - Export Import Intelligence and Trade Operating System",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=@originhut/web",
+    "dev:api": "npm run dev --workspace=@originhut/api",
+    "build:web": "npm run build --workspace=@originhut/web",
+    "build:api": "npm run build --workspace=@originhut/api",
+    "build": "npm run build:api && npm run build:web",
+    "typecheck": "npm run typecheck --workspace=@originhut/api",
+    "start:api": "npm run start --workspace=@originhut/api"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

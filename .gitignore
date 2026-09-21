@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Node build
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Environment / secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime storage
+storage/imports/*
+storage/exports/*
+storage/temp/*
+
+!storage/imports/.gitkeep
+!storage/exports/.gitkeep
+!storage/temp/.gitkeep
+
+# Database runtime data
+*.db
+*.sqlite
+*.sqlite3
+
+# Azure
+.azure/
+
+# Vercel
+.vercel/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+storage/postgres/
+storage/imports/
+storage/exports/
+storage/temp/
