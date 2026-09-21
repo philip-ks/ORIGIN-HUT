@@ -2,12 +2,19 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 
 import { env } from "./config/env.js";
+
 import {
   checkDatabase,
   database
 } from "./lib/database.js";
 
-import { databaseRoutes } from "./routes/database.js";
+import {
+  databaseRoutes
+} from "./routes/database.js";
+
+import {
+  referenceRoutes
+} from "./routes/reference.js";
 
 
 const app = Fastify({
@@ -20,7 +27,13 @@ await app.register(cors, {
 });
 
 
-await app.register(databaseRoutes);
+await app.register(
+  databaseRoutes
+);
+
+await app.register(
+  referenceRoutes
+);
 
 
 app.get(
@@ -35,7 +48,8 @@ app.get(
 
       status: "alive",
 
-      timestamp: new Date().toISOString()
+      timestamp:
+        new Date().toISOString()
 
     };
 
@@ -45,9 +59,13 @@ app.get(
 
 app.get(
   "/api/health",
-  async (_request, reply) => {
+  async (
+    _request,
+    reply
+  ) => {
 
-    const db = await checkDatabase();
+    const db =
+      await checkDatabase();
 
     if (!db.connected) {
       reply.code(503);
@@ -55,19 +73,26 @@ app.get(
 
     return {
 
-      ok: db.connected,
+      ok:
+        db.connected,
 
-      service: "origin-hut-api",
+      service:
+        "origin-hut-api",
 
-      platform: "Origin Hut",
+      platform:
+        "Origin Hut",
 
-      domain: "export-import",
+      domain:
+        "export-import",
 
-      environment: env.NODE_ENV,
+      environment:
+        env.NODE_ENV,
 
-      database: db,
+      database:
+        db,
 
-      timestamp: new Date().toISOString()
+      timestamp:
+        new Date().toISOString()
 
     };
 
@@ -77,9 +102,13 @@ app.get(
 
 app.get(
   "/api/health/ready",
-  async (_request, reply) => {
+  async (
+    _request,
+    reply
+  ) => {
 
-    const db = await checkDatabase();
+    const db =
+      await checkDatabase();
 
     if (!db.connected) {
 
@@ -87,11 +116,14 @@ app.get(
 
       return {
 
-        ready: false,
+        ready:
+          false,
 
-        database: db,
+        database:
+          db,
 
-        timestamp: new Date().toISOString()
+        timestamp:
+          new Date().toISOString()
 
       };
 
@@ -99,11 +131,14 @@ app.get(
 
     return {
 
-      ready: true,
+      ready:
+        true,
 
-      database: db,
+      database:
+        db,
 
-      timestamp: new Date().toISOString()
+      timestamp:
+        new Date().toISOString()
 
     };
 
@@ -116,7 +151,9 @@ async function shutdown(
 ) {
 
   app.log.info(
-    { signal },
+    {
+      signal
+    },
     "Origin Hut shutting down"
   );
 
@@ -132,7 +169,9 @@ async function shutdown(
 process.on(
   "SIGINT",
   () => {
-    void shutdown("SIGINT");
+    void shutdown(
+      "SIGINT"
+    );
   }
 );
 
@@ -140,7 +179,9 @@ process.on(
 process.on(
   "SIGTERM",
   () => {
-    void shutdown("SIGTERM");
+    void shutdown(
+      "SIGTERM"
+    );
   }
 );
 
@@ -149,18 +190,27 @@ try {
 
   await app.listen({
 
-    port: env.API_PORT,
+    port:
+      env.API_PORT,
 
-    host: env.API_HOST
+    host:
+      env.API_HOST
 
   });
 
   app.log.info(
     {
-      service: "origin-hut-api",
-      environment: env.NODE_ENV,
-      port: env.API_PORT,
-      host: env.API_HOST
+      service:
+        "origin-hut-api",
+
+      environment:
+        env.NODE_ENV,
+
+      port:
+        env.API_PORT,
+
+      host:
+        env.API_HOST
     },
     "Origin Hut API started"
   );
@@ -168,7 +218,9 @@ try {
 }
 catch (error) {
 
-  app.log.error(error);
+  app.log.error(
+    error
+  );
 
   await database.end();
 
