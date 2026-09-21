@@ -229,18 +229,37 @@ function validationError(
 }
 
 
-async function manufacturerExists(
+type ManufacturerEligibility = {
+
+  exists: boolean;
+
+  hasManufacturerRole: boolean;
+
+};
+
+
+async function loadManufacturerEligibility(
   id: string
-) {
+): Promise<ManufacturerEligibility> {
 
   const result =
     await database.query(
       `
-      SELECT EXISTS (
-        SELECT 1
-        FROM organizations
-        WHERE id = $1::uuid
-      ) AS exists
+      SELECT
+
+        EXISTS (
+          SELECT 1
+          FROM organizations
+          WHERE id = $1::uuid
+        ) AS exists,
+
+        EXISTS (
+          SELECT 1
+          FROM organization_roles
+          WHERE
+            organization_id = $1::uuid
+            AND role_code = 'manufacturer'
+        ) AS "hasManufacturerRole"
       `,
       [
         id
@@ -248,9 +267,19 @@ async function manufacturerExists(
     );
 
 
-  return Boolean(
-    result.rows[0]?.exists
-  );
+  return {
+
+    exists:
+      Boolean(
+        result.rows[0]?.exists
+      ),
+
+    hasManufacturerRole:
+      Boolean(
+        result.rows[0]?.hasManufacturerRole
+      )
+
+  };
 
 }
 
@@ -569,25 +598,53 @@ export async function productRoutes(
         ?? null;
 
 
-      if (
-        manufacturerId
-        && !await manufacturerExists(
-          manufacturerId
-        )
-      ) {
+      if (manufacturerId) {
 
-        reply.code(404);
+        const manufacturer =
+          await loadManufacturerEligibility(
+            manufacturerId
+          );
 
-        return {
 
-          ok: false,
+        if (!manufacturer.exists) {
 
-          error:
-            "manufacturer_not_found",
+          reply.code(404);
 
-          manufacturerId
+          return {
 
-        };
+            ok: false,
+
+            error:
+              "manufacturer_not_found",
+
+            manufacturerId
+
+          };
+
+        }
+
+
+        if (
+          !manufacturer.hasManufacturerRole
+        ) {
+
+          reply.code(409);
+
+          return {
+
+            ok: false,
+
+            error:
+              "manufacturer_role_required",
+
+            manufacturerId,
+
+            requiredRole:
+              "manufacturer"
+
+          };
+
+        }
 
       }
 
@@ -790,24 +847,58 @@ export async function productRoutes(
 
       if (
         body.data.manufacturerId
-        && !await manufacturerExists(
-          body.data.manufacturerId
-        )
+        !== undefined
+        && body.data.manufacturerId
+        !== null
       ) {
 
-        reply.code(404);
-
-        return {
-
-          ok: false,
-
-          error:
-            "manufacturer_not_found",
-
-          manufacturerId:
+        const manufacturer =
+          await loadManufacturerEligibility(
             body.data.manufacturerId
+          );
 
-        };
+
+        if (!manufacturer.exists) {
+
+          reply.code(404);
+
+          return {
+
+            ok: false,
+
+            error:
+              "manufacturer_not_found",
+
+            manufacturerId:
+              body.data.manufacturerId
+
+          };
+
+        }
+
+
+        if (
+          !manufacturer.hasManufacturerRole
+        ) {
+
+          reply.code(409);
+
+          return {
+
+            ok: false,
+
+            error:
+              "manufacturer_role_required",
+
+            manufacturerId:
+              body.data.manufacturerId,
+
+            requiredRole:
+              "manufacturer"
+
+          };
+
+        }
 
       }
 
