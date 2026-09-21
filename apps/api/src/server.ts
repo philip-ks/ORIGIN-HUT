@@ -16,6 +16,10 @@ import {
   referenceRoutes
 } from "./routes/reference.js";
 
+import {
+  classificationRoutes
+} from "./routes/classification.js";
+
 
 const app = Fastify({
   logger: true
@@ -33,6 +37,10 @@ await app.register(
 
 await app.register(
   referenceRoutes
+);
+
+await app.register(
+  classificationRoutes
 );
 
 
