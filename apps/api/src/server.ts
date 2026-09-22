@@ -36,6 +36,10 @@ import {
   tradeFlowRoutes
 } from "./routes/trade-flows.js";
 
+import {
+  marketIntelligenceRoutes
+} from "./routes/market-intelligence.js";
+
 
 const app = Fastify({
   logger: true
@@ -73,6 +77,10 @@ await app.register(
 
 await app.register(
   tradeFlowRoutes
+);
+
+await app.register(
+  marketIntelligenceRoutes
 );
 
 
