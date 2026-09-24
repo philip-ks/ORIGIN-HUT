@@ -34,39 +34,106 @@ UN Comtrade API
 - DuckDB installed and tested
 - Parquet write/read regression passed
 - Manifest/checksum regression passed
-- UN Comtrade connector created
+- UN Comtrade Bronze/Silver connector implemented
 - India to UAE HS380210 2024 export live ingestion passed
 - Bronze raw-response checksum verified
-- record-level SHA-256 verified
+- record-level SHA-256 provenance verified
 - Silver Parquet checksum verified
 - DuckDB read-back verified
-- runtime Bronze/Silver artifacts ignored by Git
-- PostgreSQL not yet populated by OH13
+- PostgreSQL canonicalization implemented
+- UN Comtrade data source registered
+- immutable trade_observation source record preserved
+- ingestion_run_records audit coverage verified
+- canonical trade_flow created
+- entity_source_links provenance verified
+- reporter and partner resolved through ISO3
+- repeated identical ingestion reuses source record
+- repeated identical ingestion reuses canonical trade_flow
+- second identical ingestion creates an independent ingestion audit run
+- canonical source-record pointer verified
+- raw trade value and FOB value verified against canonical trade_flow
+- aggregate transport mode 0 normalized to NULL
+- aggregate customs code C00 normalized to NULL
+- Python regression passed
+- API TypeScript typecheck passed
+- API build passed
+- Migration 012 remains schema head
 - no Migration 013 required currently
 
-## Database Baseline
+## Current Database State
 
-data_sources: 4
-ingestion_runs: 5
-source_records: 123979
-ingestion_run_records: 123979
-entity_source_links: 123973
-trade_flows: 0
+data_sources: 5
+ingestion_runs: 7
+source_records: 123980
+ingestion_run_records: 123981
+entity_source_links: 123974
+trade_flows: 1
 migration_head: 012
+
+## Current Comtrade State
+
+data_sources: 1
+ingestion_runs: 2
+completed_runs: 2
+failed_runs: 0
+source_records: 1
+ingestion_run_records: 2
+trade_flows: 1
+provenance_links: 1
+
+## Verified Canonical Observation
+
+reporterISO3: IND
+partnerISO3: ARE
+flowDirection: export
+classification: HS2022
+hsCode: 380210
+periodStart: 2024-01-01
+periodEnd: 2024-12-31
+periodType: annual
+quantity: 4268940
+quantityUnit: kg
+netWeightKg: 4268940
+grossWeightKg: 0
+tradeValueUsd: 6410583.797
+fobValueUsd: 6410583.797
+currency: USD
+status: published
+isProvisional: false
+
+## Idempotency Proof
+
+First apply:
+- source record: inserted
+- trade flow: inserted
+- ingestion run: completed
+
+Second identical apply:
+- source record: reused
+- trade flow: reused
+- ingestion run: completed
+
+Invariant after second apply:
+- one logical Comtrade source record
+- one canonical Comtrade trade flow
+- one provenance link
+- two ingestion-run audit links
 
 ## Current OH13 Files
 
 .gitignore
+.github/workflows/origin-hut-ci.yml
+docs/AI_HANDOFF.md
 services/data/requirements.txt
 services/data/src/connectors/comtrade.py
+services/data/src/connectors/comtrade_canonical.py
 services/data/src/storage/__init__.py
 services/data/src/storage/manifests.py
 services/data/src/storage/parquet.py
 services/data/tests/test_analytical_storage.py
 services/data/tests/test_comtrade_connector.py
+services/data/tests/test_comtrade_canonical.py
 storage/parquet/.gitkeep
-.github/workflows/origin-hut-ci.yml
-docs/AI_HANDOFF.md
 
 ## CI
 
@@ -81,23 +148,17 @@ Checks:
 
 ## Next Action
 
-Implement Silver to PostgreSQL canonicalization:
+Complete OH13 production hardening.
 
-data_sources
-  -> ingestion_runs
-  -> source_records
-  -> ingestion_run_records
-  -> trade_flows
-  -> entity_source_links
+Priority checks:
 
-Requirements:
-
-- reporter and partner resolved through ISO3
-- immutable source-record revisions
-- canonical source record maintained
-- repeat-run idempotency
-- no duplicate trade flow
-- no Migration 013 unless genuinely required
+- revised source-record version handling
+- World partner normalization through the full PostgreSQL path
+- monthly-period normalization through the full PostgreSQL path
+- database-backed integration test strategy for CI
+- production UN Comtrade authenticated API configuration
+- production-scale ingestion batching and pagination
+- retain Bronze raw artifacts and Silver Parquet outside Git
 
 ## Development Workflow
 

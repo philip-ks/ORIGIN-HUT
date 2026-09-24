@@ -47,6 +47,11 @@ from storage.parquet import (
 )
 
 
+from connectors.comtrade_canonical import (
+    canonicalize_trade_observation,
+)
+
+
 SOURCE_CODE = "un_comtrade_trade"
 
 PREVIEW_BASE = (
@@ -916,6 +921,16 @@ def parse_args() -> argparse.Namespace:
     )
 
 
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help=(
+            "Persist provenance and the canonical "
+            "trade_flow fact to PostgreSQL."
+        ),
+    )
+
+
     args = parser.parse_args()
 
 
@@ -1044,6 +1059,39 @@ def main() -> int:
     )
 
 
+    database_result = None
+
+
+    if args.apply:
+
+        database_result = canonicalize_trade_observation(
+            record,
+            normalized,
+            artifact_run_id=
+                run_id,
+            request_url=
+                request_url,
+            raw_path=
+                raw_path,
+            parquet_paths=
+                parquet_paths,
+        )
+
+
+        print("")
+        print(
+            "=== POSTGRESQL CANONICALIZATION ==="
+        )
+
+        print(
+            json.dumps(
+                database_result,
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+
+
     manifest = build_manifest(
         source_code=
             SOURCE_CODE,
@@ -1133,7 +1181,14 @@ def main() -> int:
                 raw_artifact_hash,
 
             "databaseWrites":
-                0,
+                (
+                    1
+                    if database_result
+                    else 0
+                ),
+
+            "database":
+                database_result,
         },
     )
 
@@ -1232,7 +1287,14 @@ def main() -> int:
             ),
 
         "databaseWrites":
-            0,
+            (
+                1
+                if database_result
+                else 0
+            ),
+
+        "database":
+            database_result,
     }
 
 
@@ -1255,7 +1317,7 @@ def main() -> int:
         "=============================================="
     )
     print(
-        "OH13 COMTRADE BRONZE/SILVER INGESTION PASSED"
+        "OH13 COMTRADE INGESTION PASSED"
     )
     print(
         "=============================================="
