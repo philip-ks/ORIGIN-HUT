@@ -59,7 +59,7 @@ UN Comtrade API
 - revised observation updates the existing canonical trade flow
 - World/W00 partner remains NULL through PostgreSQL canonicalization
 - monthly period normalization verified through PostgreSQL
-- disposable integration database verified against migrations 001-012
+- disposable integration database verified against migrations 001-013
 - local PostgreSQL host connections normalize localhost to 127.0.0.1
 - PostgreSQL connection timeout hardened to 5 seconds
 - Migration 013 trade observation revision semantics applied
@@ -71,6 +71,22 @@ UN Comtrade API
 - UN Comtrade public preview access mode preserved in metadata
 - provider revision status preserved as unknown
 - market intelligence no longer excludes unknown revision state by default
+- authenticated UN Comtrade Data API foundation implemented
+- UN_COMTRADE_API_KEY loaded from environment only
+- API credentials are not written to request URLs, manifests or logs
+- public preview remains available as an explicit/fallback access mode
+- authenticated Data API uses safe 100000-record default
+- public preview retains 500-record limit
+- deterministic historical query planner implemented
+- historical task IDs are deterministic across equivalent plans
+- resumable JSON checkpoint state implemented outside Git
+- interrupted tasks recover to pending state
+- transient provider failures can be deferred and retried
+- planner-to-child connector access-mode mapping verified
+- live 2023 and 2024 multi-period planner execution verified
+- historical planner resume after provider HTTP 500 verified
+- 2024 planner apply reused immutable source record and canonical trade flow
+- 2023 planner apply inserted a new source record and canonical trade flow
 - Python regression passed
 - API TypeScript typecheck passed
 - API build passed
@@ -80,23 +96,23 @@ UN Comtrade API
 ## Current Database State
 
 data_sources: 5
-ingestion_runs: 7
-source_records: 123980
-ingestion_run_records: 123981
-entity_source_links: 123974
-trade_flows: 1
+ingestion_runs: 9
+source_records: 123981
+ingestion_run_records: 123983
+entity_source_links: 123975
+trade_flows: 2
 migration_head: 013
 
 ## Current Comtrade State
 
 data_sources: 1
-ingestion_runs: 2
-completed_runs: 2
+ingestion_runs: 4
+completed_runs: 4
 failed_runs: 0
-source_records: 1
-ingestion_run_records: 2
-trade_flows: 1
-provenance_links: 1
+source_records: 2
+ingestion_run_records: 4
+trade_flows: 2
+provenance_links: 2
 
 ## Verified Canonical Observation
 
@@ -120,6 +136,27 @@ isProvisional: null
 sourceAccessMode: public_preview
 providerRevisionStatus: unknown
 
+## Verified 2023 Historical Observation
+
+reporterISO3: IND
+partnerISO3: ARE
+flowDirection: export
+classification: HS2022
+hsCode: 380210
+periodStart: 2023-01-01
+periodEnd: 2023-12-31
+periodType: annual
+quantity: 3556760
+quantityUnit: kg
+netWeightKg: 3556760
+tradeValueUsd: 6130302.438
+fobValueUsd: 6130302.438
+currency: USD
+status: published
+isProvisional: null
+sourceAccessMode: public_preview
+providerRevisionStatus: unknown
+
 ## Idempotency Proof
 
 First apply:
@@ -132,11 +169,22 @@ Second identical apply:
 - trade flow: reused
 - ingestion run: completed
 
-Invariant after second apply:
-- one logical Comtrade source record
-- one canonical Comtrade trade flow
-- one provenance link
-- two ingestion-run audit links
+2024 historical planner re-apply:
+- source record: reused
+- trade flow: reused
+- new ingestion audit run: completed
+
+Current 2024 identity invariant:
+- one logical 2024 Comtrade source record
+- one canonical 2024 Comtrade trade flow
+- one 2024 provenance link
+- three ingestion-run audit links for the 2024 source record
+
+2023 historical planner apply:
+- source record: inserted
+- trade flow: inserted
+- provenance link: inserted
+- ingestion run: completed
 
 ## Current OH13 Files
 
@@ -146,12 +194,14 @@ docs/AI_HANDOFF.md
 services/data/requirements.txt
 services/data/src/connectors/comtrade.py
 services/data/src/connectors/comtrade_canonical.py
+services/data/src/connectors/comtrade_history.py
 services/data/src/storage/__init__.py
 services/data/src/storage/manifests.py
 services/data/src/storage/parquet.py
 services/data/tests/test_analytical_storage.py
 services/data/tests/test_comtrade_connector.py
 services/data/tests/test_comtrade_canonical.py
+services/data/tests/test_comtrade_history.py
 services/data/tests/test_comtrade_postgres_integration.py
 database/migrations/013_trade_observation_revision_semantics.sql
 storage/parquet/.gitkeep
@@ -175,11 +225,11 @@ Complete OH13 production hardening.
 
 Priority checks:
 
-- production UN Comtrade authenticated API configuration
-- production-scale ingestion batching and pagination
-- historical ingestion orchestration and checkpointing
-- scheduled refresh strategy
-- retain Bronze raw artifacts and Silver Parquet outside Git
+- obtain/configure a real UN Comtrade API subscription key and live-test authenticated_data
+- add scheduled historical refresh orchestration
+- define retry/backoff and daily call-budget policy for unattended runs
+- evaluate premium bulk ingestion for very large reporter-period datasets
+- retain Bronze raw artifacts and Silver Parquet outside Git in production storage
 
 ## Development Workflow
 

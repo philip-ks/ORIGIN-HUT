@@ -14,6 +14,8 @@ from typing import Any
 
 import httpx
 
+from dotenv import load_dotenv
+
 
 SOURCE_FILE = Path(__file__).resolve()
 
@@ -58,6 +60,10 @@ PREVIEW_BASE = (
     "https://comtradeapi.un.org/public/v1/preview"
 )
 
+DATA_BASE = (
+    "https://comtradeapi.un.org/data/v1/get"
+)
+
 
 class ConnectorError(
     RuntimeError
@@ -74,6 +80,145 @@ def stop(
     )
 
 
+def comtrade_api_key() -> str | None:
+
+    load_dotenv(
+        PROJECT_ROOT / ".env"
+    )
+
+    value = (
+        os.environ.get(
+            "UN_COMTRADE_API_KEY",
+            ""
+        )
+        .strip()
+    )
+
+    return (
+        value
+        or None
+    )
+
+
+def resolve_access_mode(
+    requested: str,
+    api_key: str | None,
+) -> str:
+
+    if requested == "preview":
+
+        return (
+            "public_preview"
+        )
+
+
+    if requested == "data":
+
+        if not api_key:
+
+            stop(
+                "UN_COMTRADE_API_KEY is required "
+                "for --access-mode data."
+            )
+
+        return (
+            "authenticated_data"
+        )
+
+
+    if requested == "auto":
+
+        return (
+            "authenticated_data"
+            if api_key
+            else "public_preview"
+        )
+
+
+    stop(
+        "Unsupported Comtrade access mode: "
+        + requested
+    )
+
+
+def resolve_max_records(
+    requested: int | None,
+    access_mode: str,
+) -> int:
+
+    if access_mode == "public_preview":
+
+        default_value = 500
+        hard_limit = 500
+
+    elif access_mode == "authenticated_data":
+
+        # Safe default for the free/basic API product.
+        # Premium users may explicitly request up to 250,000.
+        default_value = 100000
+        hard_limit = 250000
+
+    else:
+
+        stop(
+            "Unsupported resolved access mode: "
+            + access_mode
+        )
+
+
+    value = (
+        requested
+        if requested is not None
+        else default_value
+    )
+
+
+    if (
+        value < 1
+        or value > hard_limit
+    ):
+
+        stop(
+            "Invalid max-records for "
+            f"{access_mode}: {value}. "
+            f"Allowed range is 1-{hard_limit}."
+        )
+
+
+    return value
+
+
+def build_request_headers(
+    access_mode: str,
+    api_key: str | None,
+) -> dict[str, str]:
+
+    headers = {
+        "Accept":
+            "application/json",
+
+        "User-Agent":
+            "OriginHut/0.1 UN-Comtrade-Connector",
+    }
+
+
+    if access_mode == "authenticated_data":
+
+        if not api_key:
+
+            stop(
+                "Authenticated Comtrade request "
+                "requires an API key."
+            )
+
+        headers[
+            "Ocp-Apim-Subscription-Key"
+        ] = api_key
+
+
+    return headers
+
+
 def as_decimal(
     value: Any,
 ) -> Decimal | None:
@@ -88,10 +233,19 @@ def as_decimal(
 
 def build_request_url(
     args: argparse.Namespace,
+    *,
+    access_mode: str,
+    max_records: int,
 ) -> str:
 
+    base = (
+        DATA_BASE
+        if access_mode == "authenticated_data"
+        else PREVIEW_BASE
+    )
+
     route = (
-        f"{PREVIEW_BASE}/"
+        f"{base}/"
         f"{args.type_code}/"
         f"{args.frequency}/"
         f"{args.classification}"
@@ -114,7 +268,7 @@ def build_request_url(
             args.flow_code,
 
         "maxRecords":
-            args.max_records,
+            max_records,
 
         "format":
             "JSON",
@@ -139,6 +293,7 @@ def build_request_url(
 
 def fetch_json(
     url: str,
+    headers: dict[str, str],
 ) -> tuple[
     dict[str, Any],
     bytes,
@@ -151,15 +306,6 @@ def fetch_json(
         503,
         504,
     }
-
-    headers = {
-        "Accept":
-            "application/json",
-
-        "User-Agent":
-            "OriginHut/0.1 UN-Comtrade-Connector",
-    }
-
 
     last_error: Exception | None = None
 
@@ -873,6 +1019,22 @@ def parse_args() -> argparse.Namespace:
 
 
     parser.add_argument(
+        "--access-mode",
+        default="auto",
+        choices=[
+            "auto",
+            "preview",
+            "data",
+        ],
+        help=(
+            "auto uses authenticated Data API when "
+            "UN_COMTRADE_API_KEY is configured, "
+            "otherwise public preview."
+        ),
+    )
+
+
+    parser.add_argument(
         "--reporter-code",
         type=int,
         default=699,
@@ -911,7 +1073,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--max-records",
         type=int,
-        default=20,
+        default=None,
+        help=(
+            "Defaults to 500 for preview and "
+            "100000 for authenticated data."
+        ),
     )
 
 
@@ -935,12 +1101,16 @@ def parse_args() -> argparse.Namespace:
 
 
     if (
-        args.max_records < 1
-        or args.max_records > 500
+        args.max_records is not None
+        and (
+            args.max_records < 1
+            or args.max_records > 250000
+        )
     ):
 
         parser.error(
-            "--max-records must be between 1 and 500."
+            "--max-records must be between "
+            "1 and 250000."
         )
 
 
@@ -960,6 +1130,25 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
 
     args = parse_args()
+
+
+    api_key = comtrade_api_key()
+
+    access_mode = resolve_access_mode(
+        args.access_mode,
+        api_key,
+    )
+
+    max_records = resolve_max_records(
+        args.max_records,
+        access_mode,
+    )
+
+    request_headers = build_request_headers(
+        access_mode,
+        api_key,
+    )
+
 
     run_id = (
         args.run_id
@@ -988,7 +1177,11 @@ def main() -> int:
 
 
     request_url = build_request_url(
-        args
+        args,
+        access_mode=
+            access_mode,
+        max_records=
+            max_records,
     )
 
 
@@ -1001,13 +1194,30 @@ def main() -> int:
         run_id,
     )
     print(
+        "accessMode:",
+        access_mode,
+    )
+
+    print(
+        "authenticated:",
+        access_mode
+        == "authenticated_data",
+    )
+
+    print(
+        "maxRecords:",
+        max_records,
+    )
+
+    print(
         "url:",
         request_url,
     )
 
 
     payload, raw_bytes = fetch_json(
-        request_url
+        request_url,
+        request_headers,
     )
 
 
@@ -1101,7 +1311,19 @@ def main() -> int:
 
         request={
             "mode":
-                "public_preview",
+                access_mode,
+
+            "authenticated":
+                access_mode
+                == "authenticated_data",
+
+            "credentialTransport":
+                (
+                    "Ocp-Apim-Subscription-Key header"
+                    if access_mode
+                    == "authenticated_data"
+                    else None
+                ),
 
             "url":
                 request_url,
@@ -1131,7 +1353,7 @@ def main() -> int:
                 args.flow_code,
 
             "maxRecords":
-                args.max_records,
+                max_records,
         },
 
         raw_artifacts=[
@@ -1211,6 +1433,16 @@ def main() -> int:
 
         "runId":
             run_id,
+
+        "accessMode":
+            access_mode,
+
+        "authenticated":
+            access_mode
+            == "authenticated_data",
+
+        "maxRecords":
+            max_records,
 
         "sourceExternalId":
             normalized[

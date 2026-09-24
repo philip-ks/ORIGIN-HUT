@@ -25,7 +25,10 @@ sys.path.insert(
 
 
 from connectors.comtrade import (
+    ConnectorError,
     normalize_record,
+    resolve_access_mode,
+    resolve_max_records,
 )
 
 from storage.manifests import (
@@ -234,6 +237,90 @@ class ComtradeConnectorTest(
                 SAMPLE
             ),
         )
+
+
+    def test_access_mode_resolution(
+        self,
+    ) -> None:
+
+        self.assertEqual(
+            resolve_access_mode(
+                "auto",
+                None,
+            ),
+            "public_preview",
+        )
+
+        self.assertEqual(
+            resolve_access_mode(
+                "auto",
+                "secret",
+            ),
+            "authenticated_data",
+        )
+
+        self.assertEqual(
+            resolve_access_mode(
+                "preview",
+                "secret",
+            ),
+            "public_preview",
+        )
+
+        self.assertEqual(
+            resolve_access_mode(
+                "data",
+                "secret",
+            ),
+            "authenticated_data",
+        )
+
+        with self.assertRaises(
+            ConnectorError
+        ):
+
+            resolve_access_mode(
+                "data",
+                None,
+            )
+
+
+    def test_record_limits(
+        self,
+    ) -> None:
+
+        self.assertEqual(
+            resolve_max_records(
+                None,
+                "public_preview",
+            ),
+            500,
+        )
+
+        self.assertEqual(
+            resolve_max_records(
+                None,
+                "authenticated_data",
+            ),
+            100000,
+        )
+
+        self.assertEqual(
+            resolve_max_records(
+                250000,
+                "authenticated_data",
+            ),
+            250000,
+        )
+
+        with self.assertRaises(
+            ConnectorError
+        ):
+
+            resolve_max_records(
+                501,
+                "public_preview",
+            )
 
 
     def test_world_partner_becomes_null(

@@ -246,6 +246,13 @@ def source_access_mode(
         )
 
 
+    if "/data/v1/get" in path:
+
+        return (
+            "authenticated_data"
+        )
+
+
     if "/public/" in path:
 
         return (

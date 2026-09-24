@@ -221,6 +221,14 @@ class ComtradeCanonicalizationTest(
 
         self.assertEqual(
             source_access_mode(
+                "https://comtradeapi.un.org/"
+                "data/v1/get/C/A/HS"
+            ),
+            "authenticated_data",
+        )
+
+        self.assertEqual(
+            source_access_mode(
                 "https://example.invalid/data"
             ),
             "unknown",
