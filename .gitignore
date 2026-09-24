@@ -62,3 +62,7 @@ storage/postgres/
 storage/imports/
 storage/exports/
 storage/temp/
+
+# Analytical runtime storage
+storage/parquet/*
+!storage/parquet/.gitkeep
