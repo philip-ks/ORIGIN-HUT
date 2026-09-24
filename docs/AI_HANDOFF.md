@@ -54,6 +54,14 @@ UN Comtrade API
 - raw trade value and FOB value verified against canonical trade_flow
 - aggregate transport mode 0 normalized to NULL
 - aggregate customs code C00 normalized to NULL
+- PostgreSQL integration suite established
+- revised Comtrade observation creates a new immutable source version
+- revised observation updates the existing canonical trade flow
+- World/W00 partner remains NULL through PostgreSQL canonicalization
+- monthly period normalization verified through PostgreSQL
+- disposable integration database verified against migrations 001-012
+- local PostgreSQL host connections normalize localhost to 127.0.0.1
+- PostgreSQL connection timeout hardened to 5 seconds
 - Python regression passed
 - API TypeScript typecheck passed
 - API build passed
@@ -155,7 +163,7 @@ Priority checks:
 - revised source-record version handling
 - World partner normalization through the full PostgreSQL path
 - monthly-period normalization through the full PostgreSQL path
-- database-backed integration test strategy for CI
+- preview versus production UN Comtrade source semantics
 - production UN Comtrade authenticated API configuration
 - production-scale ingestion batching and pagination
 - retain Bronze raw artifacts and Silver Parquet outside Git

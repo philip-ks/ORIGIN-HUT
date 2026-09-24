@@ -3,6 +3,12 @@ from __future__ import annotations
 import os
 
 from pathlib import Path
+from urllib.parse import (
+    parse_qsl,
+    urlencode,
+    urlsplit,
+    urlunsplit,
+)
 from typing import Any, Sequence
 
 import psycopg
@@ -75,7 +81,89 @@ def database_url() -> str:
             "DATABASE_URL missing."
         )
 
-    return value
+
+    parts = urlsplit(
+        value
+    )
+
+
+    hostname = (
+        parts.hostname
+        or ""
+    )
+
+
+    if hostname.lower() == "localhost":
+
+        username = (
+            parts.username
+            or ""
+        )
+
+        password = (
+            parts.password
+            or ""
+        )
+
+
+        credentials = username
+
+
+        if password:
+
+            credentials += (
+                ":"
+                + password
+            )
+
+
+        if credentials:
+
+            credentials += "@"
+
+
+        port = (
+            parts.port
+            or 5432
+        )
+
+
+        netloc = (
+            credentials
+            + "127.0.0.1:"
+            + str(port)
+        )
+
+    else:
+
+        netloc = (
+            parts.netloc
+        )
+
+
+    query = dict(
+        parse_qsl(
+            parts.query,
+            keep_blank_values=True,
+        )
+    )
+
+
+    query.setdefault(
+        "connect_timeout",
+        "5",
+    )
+
+
+    return urlunsplit(
+        (
+            parts.scheme,
+            netloc,
+            parts.path,
+            urlencode(query),
+            parts.fragment,
+        )
+    )
 
 
 def relative_path(
