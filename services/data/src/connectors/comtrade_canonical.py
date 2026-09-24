@@ -230,6 +230,34 @@ def canonical_customs_procedure(
     return text
 
 
+def source_access_mode(
+    request_url: str,
+) -> str:
+
+    path = urlsplit(
+        request_url
+    ).path.lower()
+
+
+    if "/public/v1/preview" in path:
+
+        return (
+            "public_preview"
+        )
+
+
+    if "/public/" in path:
+
+        return (
+            "public_api"
+        )
+
+
+    return (
+        "unknown"
+    )
+
+
 def register_source(
     connection: psycopg.Connection,
 ) -> str:
@@ -357,6 +385,14 @@ def start_ingestion(
                     "requestUrl":
                         request_url,
 
+                    "sourceAccessMode":
+                        source_access_mode(
+                            request_url
+                        ),
+
+                    "providerRevisionStatus":
+                        "unknown",
+
                     "rawArtifact":
                         relative_path(
                             raw_path
@@ -465,6 +501,14 @@ def preserve_source_record(
 
                     "requestUrl":
                         request_url,
+
+                    "sourceAccessMode":
+                        source_access_mode(
+                            request_url
+                        ),
+
+                    "providerRevisionStatus":
+                        "unknown",
 
                     "rawArtifact":
                         relative_path(
@@ -693,6 +737,8 @@ def resolve_references(
 def trade_metadata(
     raw_record: dict[str, Any],
     normalized: dict[str, Any],
+    *,
+    request_url: str,
 ) -> dict[str, Any]:
 
     return {
@@ -701,6 +747,14 @@ def trade_metadata(
 
         "sourceCode":
             SOURCE_CODE,
+
+        "sourceAccessMode":
+            source_access_mode(
+                request_url
+            ),
+
+        "providerRevisionStatus":
+            "unknown",
 
         "sourceExternalId":
             normalized[
@@ -798,6 +852,8 @@ def upsert_trade_flow(
     raw_record: dict[str, Any],
     normalized: dict[str, Any],
     references: dict[str, str | None],
+    *,
+    request_url: str,
 ) -> tuple[
     str,
     str,
@@ -861,6 +917,8 @@ def upsert_trade_flow(
     metadata = trade_metadata(
         raw_record,
         normalized,
+        request_url=
+            request_url,
     )
 
 
@@ -1000,7 +1058,7 @@ def upsert_trade_flow(
                 %s,
                 %s,
                 'published',
-                FALSE,
+                NULL,
                 %s,
                 %s
             )
@@ -1086,7 +1144,7 @@ def upsert_trade_flow(
             transport_mode = %s,
             customs_procedure = %s,
             status = 'published',
-            is_provisional = FALSE,
+            is_provisional = NULL,
             canonical_source_record_id = %s,
             metadata = %s
         WHERE id = %s
@@ -1453,6 +1511,8 @@ def canonicalize_trade_observation(
                     raw_record,
                     normalized,
                     references,
+                    request_url=
+                        request_url,
                 )
 
 

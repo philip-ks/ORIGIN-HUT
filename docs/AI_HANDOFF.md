@@ -62,11 +62,20 @@ UN Comtrade API
 - disposable integration database verified against migrations 001-012
 - local PostgreSQL host connections normalize localhost to 127.0.0.1
 - PostgreSQL connection timeout hardened to 5 seconds
+- Migration 013 trade observation revision semantics applied
+- trade_flows.is_provisional is now tri-state
+- TRUE means explicitly provisional
+- FALSE means explicitly non-provisional
+- NULL means provider revision status unknown or not supplied
+- existing UN Comtrade observation corrected from FALSE to NULL
+- UN Comtrade public preview access mode preserved in metadata
+- provider revision status preserved as unknown
+- market intelligence no longer excludes unknown revision state by default
 - Python regression passed
 - API TypeScript typecheck passed
 - API build passed
-- Migration 012 remains schema head
-- no Migration 013 required currently
+- Migration 013 is schema head
+- Migration 013 verified on disposable and real local PostgreSQL databases
 
 ## Current Database State
 
@@ -76,7 +85,7 @@ source_records: 123980
 ingestion_run_records: 123981
 entity_source_links: 123974
 trade_flows: 1
-migration_head: 012
+migration_head: 013
 
 ## Current Comtrade State
 
@@ -107,7 +116,9 @@ tradeValueUsd: 6410583.797
 fobValueUsd: 6410583.797
 currency: USD
 status: published
-isProvisional: false
+isProvisional: null
+sourceAccessMode: public_preview
+providerRevisionStatus: unknown
 
 ## Idempotency Proof
 
@@ -141,6 +152,8 @@ services/data/src/storage/parquet.py
 services/data/tests/test_analytical_storage.py
 services/data/tests/test_comtrade_connector.py
 services/data/tests/test_comtrade_canonical.py
+services/data/tests/test_comtrade_postgres_integration.py
+database/migrations/013_trade_observation_revision_semantics.sql
 storage/parquet/.gitkeep
 
 ## CI
@@ -152,7 +165,9 @@ Checks:
 - Node API typecheck
 - Node API build
 - Python compile
-- Python tests
+- Python unit tests
+- PostgreSQL integration tests
+- migrations 001-013 applied in disposable PostGIS CI database
 
 ## Next Action
 
@@ -160,12 +175,10 @@ Complete OH13 production hardening.
 
 Priority checks:
 
-- revised source-record version handling
-- World partner normalization through the full PostgreSQL path
-- monthly-period normalization through the full PostgreSQL path
-- preview versus production UN Comtrade source semantics
 - production UN Comtrade authenticated API configuration
 - production-scale ingestion batching and pagination
+- historical ingestion orchestration and checkpointing
+- scheduled refresh strategy
 - retain Bronze raw artifacts and Silver Parquet outside Git
 
 ## Development Workflow

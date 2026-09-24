@@ -148,11 +148,11 @@ const booleanQuerySchema =
     "true",
     "false"
   ])
-    .default("false")
     .transform(
       value =>
         value === "true"
-    );
+    )
+    .optional();
 
 
 const valueMetricSchema =
@@ -566,8 +566,11 @@ export async function marketIntelligenceRoutes(
                 AND tf.status =
                     $8
 
-                AND tf.is_provisional =
-                    $9
+                AND (
+                  $9::boolean IS NULL
+                  OR tf.is_provisional =
+                     $9::boolean
+                )
 
                 AND ${metric}
                     IS NOT NULL
@@ -634,7 +637,7 @@ export async function marketIntelligenceRoutes(
             periodTo ?? null,
             currency ?? null,
             status,
-            isProvisional,
+            isProvisional ?? null,
             limit,
             offset
           ]
@@ -705,7 +708,8 @@ export async function marketIntelligenceRoutes(
 
           status,
 
-          isProvisional
+          isProvisional:
+            isProvisional ?? null
 
         },
 
@@ -886,8 +890,11 @@ export async function marketIntelligenceRoutes(
               AND tf.status =
                   $9
 
-              AND tf.is_provisional =
-                  $10
+              AND (
+                $10::boolean IS NULL
+                OR tf.is_provisional =
+                   $10::boolean
+              )
 
               AND ${metric}
                   IS NOT NULL
@@ -916,7 +923,7 @@ export async function marketIntelligenceRoutes(
             periodTo ?? null,
             currency ?? null,
             status,
-            isProvisional,
+            isProvisional ?? null,
             limit,
             offset
           ]
@@ -984,7 +991,8 @@ export async function marketIntelligenceRoutes(
 
           status,
 
-          isProvisional
+          isProvisional:
+            isProvisional ?? null
 
         },
 
@@ -1152,8 +1160,11 @@ export async function marketIntelligenceRoutes(
                 AND tf.status =
                     $9
 
-                AND tf.is_provisional =
-                    $10
+                AND (
+                  $10::boolean IS NULL
+                  OR tf.is_provisional =
+                     $10::boolean
+                )
 
                 AND ${metric}
                     IS NOT NULL
@@ -1334,7 +1345,7 @@ export async function marketIntelligenceRoutes(
             currency,
             periodType,
             status,
-            isProvisional,
+            isProvisional ?? null,
             limit
           ]
         );
@@ -1383,7 +1394,8 @@ export async function marketIntelligenceRoutes(
 
           status,
 
-          isProvisional
+          isProvisional:
+            isProvisional ?? null
 
         },
 

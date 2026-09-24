@@ -457,10 +457,17 @@ class ComtradePostgresIntegrationTest(
         dict,
     ]:
 
+        request_url = (
+            "https://comtradeapi.un.org/"
+            "public/v1/preview/C/A/HS"
+            f"?testRun={run_id}"
+        )
+
+
         normalized = normalize_record(
             record,
             request_url=
-                f"https://example.invalid/{run_id}",
+                request_url,
 
             raw_artifact_hash=
                 "f" * 64,
@@ -477,7 +484,7 @@ class ComtradePostgresIntegrationTest(
                 run_id,
 
             request_url=
-                f"https://example.invalid/{run_id}",
+                request_url,
 
             raw_path=
                 Path(
@@ -834,6 +841,57 @@ class ComtradePostgresIntegrationTest(
         self.assertEqual(
             row[2],
             "W00",
+        )
+
+
+    def test_revision_semantics_are_unknown_when_not_supplied(
+        self,
+    ) -> None:
+
+        record = base_record()
+
+
+        _normalized, result = self._apply(
+            record,
+            run_id=
+                "integration-revision-status",
+        )
+
+
+        with psycopg.connect(
+            database_url()
+        ) as connection:
+
+            row = connection.execute(
+                """
+                SELECT
+                    status,
+                    is_provisional,
+                    metadata ->>
+                        'sourceAccessMode',
+                    metadata ->>
+                        'providerRevisionStatus'
+
+                FROM trade_flows
+
+                WHERE id = %s
+                """,
+                (
+                    result[
+                        "tradeFlowId"
+                    ],
+                ),
+            ).fetchone()
+
+
+        self.assertEqual(
+            row,
+            (
+                "published",
+                None,
+                "public_preview",
+                "unknown",
+            ),
         )
 
 

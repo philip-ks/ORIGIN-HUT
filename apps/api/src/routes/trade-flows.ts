@@ -477,7 +477,8 @@ const createTradeFlowSchema =
 
     isProvisional: z
       .boolean()
-      .default(false),
+      .nullable()
+      .optional(),
 
     canonicalSourceRecordId: z
       .string()
@@ -1979,7 +1980,7 @@ export async function tradeFlowRoutes(
               body.customsProcedure ?? null,
 
               body.status,
-              body.isProvisional,
+              body.isProvisional ?? null,
 
               body.canonicalSourceRecordId
               ?? null,

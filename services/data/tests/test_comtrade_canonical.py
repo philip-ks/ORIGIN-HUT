@@ -26,6 +26,7 @@ sys.path.insert(
 from connectors.comtrade_canonical import (
     canonical_customs_procedure,
     canonical_transport_mode,
+    source_access_mode,
     trade_metadata,
 )
 
@@ -140,6 +141,10 @@ class ComtradeCanonicalizationTest(
         metadata = trade_metadata(
             raw,
             normalized,
+            request_url=(
+                "https://comtradeapi.un.org/"
+                "public/v1/preview/C/A/HS"
+            ),
         )
 
 
@@ -169,6 +174,56 @@ class ComtradeCanonicalizationTest(
                 "partnerISO3"
             ],
             "ARE",
+        )
+
+        self.assertEqual(
+            metadata[
+                "sourceAccessMode"
+            ],
+            "public_preview",
+        )
+
+        self.assertEqual(
+            metadata[
+                "providerRevisionStatus"
+            ],
+            "unknown",
+        )
+
+
+    def test_source_access_mode(
+        self,
+    ) -> None:
+
+        self.assertEqual(
+            source_access_mode(
+                "https://comtradeapi.un.org/"
+                "public/v1/preview/C/A/HS"
+            ),
+            "public_preview",
+        )
+
+        self.assertEqual(
+            source_access_mode(
+                "https://comtradeapi.un.org/"
+                "public/v1/preview"
+            ),
+            "public_preview",
+        )
+
+        self.assertEqual(
+            source_access_mode(
+                "https://comtradeapi.un.org/"
+                "public/v1/other"
+            ),
+            "public_api",
+        )
+
+        self.assertEqual(
+            source_access_mode(
+                "https://example.invalid/data"
+            ),
+            "unknown",
         )
 
 
