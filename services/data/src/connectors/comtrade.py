@@ -189,35 +189,15 @@ def resolve_max_records(
 
 
 def build_request_headers(
-    access_mode: str,
-    api_key: str | None,
 ) -> dict[str, str]:
 
-    headers = {
+    return {
         "Accept":
             "application/json",
 
         "User-Agent":
             "OriginHut/0.1 UN-Comtrade-Connector",
     }
-
-
-    if access_mode == "authenticated_data":
-
-        if not api_key:
-
-            stop(
-                "Authenticated Comtrade request "
-                "requires an API key."
-            )
-
-        headers[
-            "Ocp-Apim-Subscription-Key"
-        ] = api_key
-
-
-    return headers
-
 
 def as_decimal(
     value: Any,
@@ -291,6 +271,51 @@ def build_request_url(
     )
 
 
+def build_transport_url(
+    audit_url: str,
+    *,
+    access_mode: str,
+    api_key: str | None,
+) -> str:
+
+    if access_mode == "public_preview":
+
+        return audit_url
+
+
+    if access_mode != "authenticated_data":
+
+        stop(
+            "Unsupported resolved access mode: "
+            + access_mode
+        )
+
+
+    if not api_key:
+
+        stop(
+            "Authenticated Comtrade request "
+            "requires an API key."
+        )
+
+
+    transport_url = (
+        httpx.URL(
+            audit_url
+        )
+        .copy_merge_params(
+            {
+                "subscription-key":
+                    api_key,
+            }
+        )
+    )
+
+
+    return str(
+        transport_url
+    )
+
 def fetch_json(
     url: str,
     headers: dict[str, str],
@@ -307,8 +332,6 @@ def fetch_json(
         504,
     }
 
-    last_error: Exception | None = None
-
 
     for attempt in range(
         1,
@@ -324,12 +347,9 @@ def fetch_json(
                 follow_redirects=True,
             )
 
+        except httpx.HTTPError as error:
 
-            if (
-                response.status_code
-                in retry_statuses
-                and attempt < 4
-            ):
+            if attempt < 4:
 
                 time.sleep(
                     min(
@@ -341,39 +361,25 @@ def fetch_json(
                 continue
 
 
-            response.raise_for_status()
+            raise ConnectorError(
+                "UN Comtrade transport error: "
+                + type(
+                    error
+                ).__name__
+                + "."
+            ) from None
 
 
-            payload = response.json()
+        status_code = (
+            response.status_code
+        )
 
 
-            if not isinstance(
-                payload,
-                dict,
-            ):
-
-                stop(
-                    "UN Comtrade returned a non-object response."
-                )
-
-
-            return (
-                payload,
-                response.content,
-            )
-
-
-        except (
-            httpx.HTTPError,
-            json.JSONDecodeError,
-        ) as error:
-
-            last_error = error
-
-
-            if attempt >= 4:
-                raise
-
+        if (
+            status_code
+            in retry_statuses
+            and attempt < 4
+        ):
 
             time.sleep(
                 min(
@@ -382,15 +388,50 @@ def fetch_json(
                 )
             )
 
+            continue
 
-    if last_error is not None:
-        raise last_error
+
+        if (
+            status_code < 200
+            or status_code >= 300
+        ):
+
+            raise ConnectorError(
+                "UN Comtrade HTTP error "
+                f"status={status_code}."
+            ) from None
+
+
+        try:
+
+            payload = response.json()
+
+        except json.JSONDecodeError:
+
+            raise ConnectorError(
+                "UN Comtrade returned invalid JSON."
+            ) from None
+
+
+        if not isinstance(
+            payload,
+            dict,
+        ):
+
+            stop(
+                "UN Comtrade returned a non-object response."
+            )
+
+
+        return (
+            payload,
+            response.content,
+        )
 
 
     stop(
         "UN Comtrade request failed."
     )
-
 
 def select_exact_record(
     payload: dict[str, Any],
@@ -1170,10 +1211,7 @@ def main() -> int:
         access_mode,
     )
 
-    request_headers = build_request_headers(
-        access_mode,
-        api_key,
-    )
+    request_headers = build_request_headers()
 
 
     run_id = (
@@ -1211,6 +1249,15 @@ def main() -> int:
     )
 
 
+    transport_url = build_transport_url(
+        request_url,
+        access_mode=
+            access_mode,
+        api_key=
+            api_key,
+    )
+
+
     print("")
     print(
         "=== UN COMTRADE REQUEST ==="
@@ -1242,7 +1289,7 @@ def main() -> int:
 
 
     payload, raw_bytes = fetch_json(
-        request_url,
+        transport_url,
         request_headers,
     )
 
@@ -1283,11 +1330,14 @@ def main() -> int:
 
         "credentialTransport":
             (
-                "Ocp-Apim-Subscription-Key header"
+                "subscription-key query parameter"
                 if access_mode
                 == "authenticated_data"
                 else None
             ),
+
+        "credentialPersisted":
+            False,
 
         "url":
             request_url,
@@ -1534,52 +1584,8 @@ def main() -> int:
         run_id=
             run_id,
 
-        request={
-            "mode":
-                access_mode,
-
-            "authenticated":
-                access_mode
-                == "authenticated_data",
-
-            "credentialTransport":
-                (
-                    "Ocp-Apim-Subscription-Key header"
-                    if access_mode
-                    == "authenticated_data"
-                    else None
-                ),
-
-            "url":
-                request_url,
-
-            "typeCode":
-                args.type_code,
-
-            "frequency":
-                args.frequency,
-
-            "classificationSearchCode":
-                args.classification,
-
-            "reporterCode":
-                args.reporter_code,
-
-            "period":
-                args.period,
-
-            "partnerCode":
-                args.partner_code,
-
-            "cmdCode":
-                args.cmd_code,
-
-            "flowCode":
-                args.flow_code,
-
-            "maxRecords":
-                max_records,
-        },
+        request=
+            request_metadata,
 
         raw_artifacts=[
             artifact_descriptor(

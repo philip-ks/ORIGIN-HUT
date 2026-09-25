@@ -6,6 +6,9 @@ import unittest
 
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
+
+import httpx
 
 
 DATA_ROOT = (
@@ -27,6 +30,10 @@ sys.path.insert(
 
 from connectors.comtrade import (
     ConnectorError,
+    build_request_headers,
+    build_request_url,
+    build_transport_url,
+    fetch_json,
     normalize_record,
     resolve_access_mode,
     resolve_max_records,
@@ -323,6 +330,191 @@ class ComtradeConnectorTest(
                 501,
                 "public_preview",
             )
+
+
+    def test_authenticated_transport_separates_secret_from_audit_url(
+        self,
+    ) -> None:
+
+        secret = (
+            "test-secret-key"
+        )
+
+
+        args = SimpleNamespace(
+            type_code="C",
+            frequency="A",
+            classification="HS",
+            reporter_code=699,
+            period="2024",
+            partner_code=784,
+            cmd_code="380210",
+            flow_code="X",
+        )
+
+
+        audit_url = build_request_url(
+            args,
+            access_mode=
+                "authenticated_data",
+
+            max_records=
+                20,
+        )
+
+
+        transport_url = build_transport_url(
+            audit_url,
+            access_mode=
+                "authenticated_data",
+
+            api_key=
+                secret,
+        )
+
+
+        self.assertNotIn(
+            secret,
+            audit_url,
+        )
+
+        self.assertNotIn(
+            "subscription-key",
+            audit_url,
+        )
+
+
+        transport_params = (
+            httpx.URL(
+                transport_url
+            )
+            .params
+        )
+
+
+        self.assertEqual(
+            transport_params.get(
+                "subscription-key"
+            ),
+            secret,
+        )
+
+
+        self.assertEqual(
+            transport_params.get(
+                "reporterCode"
+            ),
+            "699",
+        )
+
+
+        self.assertEqual(
+            transport_params.get(
+                "period"
+            ),
+            "2024",
+        )
+
+
+        headers = build_request_headers()
+
+
+        self.assertNotIn(
+            "Ocp-Apim-Subscription-Key",
+            headers,
+        )
+
+        self.assertNotIn(
+            secret,
+            headers.values(),
+        )
+
+
+    def test_authenticated_transport_requires_key(
+        self,
+    ) -> None:
+
+        audit_url = (
+            "https://comtradeapi.un.org/"
+            "data/v1/get/C/A/HS"
+            "?reporterCode=699"
+        )
+
+
+        with self.assertRaises(
+            ConnectorError
+        ):
+
+            build_transport_url(
+                audit_url,
+                access_mode=
+                    "authenticated_data",
+
+                api_key=
+                    None,
+            )
+
+
+    def test_http_error_does_not_leak_transport_secret(
+        self,
+    ) -> None:
+
+        secret = (
+            "test-secret-key"
+        )
+
+        transport_url = (
+            "https://comtradeapi.un.org/"
+            "data/v1/get/C/A/HS"
+            "?reporterCode=699"
+            "&subscription-key="
+            + secret
+        )
+
+
+        response = httpx.Response(
+            401,
+            request=httpx.Request(
+                "GET",
+                transport_url,
+            ),
+        )
+
+
+        with patch(
+            "connectors.comtrade.httpx.get",
+            return_value=response,
+        ):
+
+            with self.assertRaises(
+                ConnectorError
+            ) as context:
+
+                fetch_json(
+                    transport_url,
+                    build_request_headers(),
+                )
+
+
+        message = str(
+            context.exception
+        )
+
+
+        self.assertIn(
+            "status=401",
+            message,
+        )
+
+        self.assertNotIn(
+            secret,
+            message,
+        )
+
+        self.assertNotIn(
+            "subscription-key",
+            message,
+        )
 
 
     def test_zero_exact_records_can_be_explicitly_allowed(

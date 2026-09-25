@@ -73,7 +73,10 @@ UN Comtrade API
 - market intelligence no longer excludes unknown revision state by default
 - authenticated UN Comtrade Data API foundation implemented
 - UN_COMTRADE_API_KEY loaded from environment only
-- API credentials are not written to request URLs, manifests or logs
+- authenticated Data API transport uses the subscription-key query parameter
+- persisted audit URLs intentionally exclude the subscription-key credential
+- API credentials are not persisted in manifests, logs, provenance or analytical artifacts
+- authenticated HTTP failures are sanitized before reaching logs/checkpoints
 - public preview remains available as an explicit/fallback access mode
 - authenticated Data API uses safe 100000-record default
 - public preview retains 500-record limit
@@ -259,11 +262,11 @@ Complete OH13 production hardening.
 
 Priority checks:
 
-- obtain/configure a real UN Comtrade API subscription key and live-test authenticated_data
-- add scheduled historical refresh orchestration
-- define retry/backoff and daily call-budget policy for unattended runs
+- configure a real UN Comtrade API subscription key and live-test authenticated_data query transport
+- enable the registered Windows scheduler only after authenticated_data live validation
+- validate unattended retry/backoff and daily call-budget behavior with authenticated traffic
 - evaluate premium bulk ingestion for very large reporter-period datasets
-- retain Bronze raw artifacts and Silver Parquet outside Git in production storage
+- finalize production storage for Bronze raw artifacts and Silver Parquet outside Git
 
 ## Development Workflow
 

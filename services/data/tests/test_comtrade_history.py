@@ -149,6 +149,20 @@ class ComtradeHistoricalPlannerTest(
 
         self.assertEqual(
             classify_failure(
+                "UN Comtrade HTTP error status=500."
+            ),
+            "deferred",
+        )
+
+        self.assertEqual(
+            classify_failure(
+                "UN Comtrade HTTP error status=429."
+            ),
+            "deferred",
+        )
+
+        self.assertEqual(
+            classify_failure(
                 "Invalid permanent task input"
             ),
             "failed",
