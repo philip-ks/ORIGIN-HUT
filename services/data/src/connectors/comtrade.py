@@ -395,7 +395,9 @@ def fetch_json(
 def select_exact_record(
     payload: dict[str, Any],
     args: argparse.Namespace,
-) -> dict[str, Any]:
+    *,
+    allow_no_data: bool = False,
+) -> dict[str, Any] | None:
 
     api_error = payload.get(
         "error"
@@ -481,7 +483,20 @@ def select_exact_record(
             )
 
 
-    if len(matches) != 1:
+    if not matches:
+
+        if allow_no_data:
+
+            return None
+
+
+        stop(
+            "Expected exactly one exact UN Comtrade "
+            "observation; found 0."
+        )
+
+
+    if len(matches) > 1:
 
         stop(
             "Expected exactly one exact UN Comtrade "
@@ -1097,6 +1112,17 @@ def parse_args() -> argparse.Namespace:
     )
 
 
+    parser.add_argument(
+        "--allow-no-data",
+        action="store_true",
+        help=(
+            "Treat zero exact provider observations "
+            "as a successful no-data ingestion. "
+            "Multiple exact observations remain an error."
+        ),
+    )
+
+
     args = parser.parse_args()
 
 
@@ -1247,10 +1273,209 @@ def main() -> int:
     )
 
 
+    request_metadata = {
+        "mode":
+            access_mode,
+
+        "authenticated":
+            access_mode
+            == "authenticated_data",
+
+        "credentialTransport":
+            (
+                "Ocp-Apim-Subscription-Key header"
+                if access_mode
+                == "authenticated_data"
+                else None
+            ),
+
+        "url":
+            request_url,
+
+        "typeCode":
+            args.type_code,
+
+        "frequency":
+            args.frequency,
+
+        "classificationSearchCode":
+            args.classification,
+
+        "reporterCode":
+            args.reporter_code,
+
+        "period":
+            args.period,
+
+        "partnerCode":
+            args.partner_code,
+
+        "cmdCode":
+            args.cmd_code,
+
+        "flowCode":
+            args.flow_code,
+
+        "maxRecords":
+            max_records,
+    }
+
+
     record = select_exact_record(
         payload,
         args,
+        allow_no_data=
+            args.allow_no_data,
     )
+
+
+    if record is None:
+
+        manifest = build_manifest(
+            source_code=
+                SOURCE_CODE,
+
+            run_id=
+                run_id,
+
+            request=
+                request_metadata,
+
+            raw_artifacts=[
+                artifact_descriptor(
+                    raw_path,
+                    root=STORAGE_ROOT,
+                )
+            ],
+
+            parquet_artifacts=[],
+
+            record_count=
+                0,
+
+            schema_version=
+                TRADE_SCHEMA_VERSION,
+
+            metadata={
+                "responseCount":
+                    payload.get(
+                        "count"
+                    ),
+
+                "elapsedTime":
+                    payload.get(
+                        "elapsedTime"
+                    ),
+
+                "observationFound":
+                    False,
+
+                "noDataReason":
+                    "no_exact_observation",
+
+                "rawArtifactSha256":
+                    raw_artifact_hash,
+
+                "applyRequested":
+                    bool(
+                        args.apply
+                    ),
+
+                "databaseWrites":
+                    0,
+
+                "database":
+                    None,
+            },
+        )
+
+
+        manifest_path = (
+            run_directory
+            / "manifest.json"
+        )
+
+
+        write_json_atomic(
+            manifest_path,
+            manifest,
+        )
+
+
+        summary = {
+            "ok":
+                True,
+
+            "runId":
+                run_id,
+
+            "accessMode":
+                access_mode,
+
+            "authenticated":
+                access_mode
+                == "authenticated_data",
+
+            "maxRecords":
+                max_records,
+
+            "observationFound":
+                False,
+
+            "noDataReason":
+                "no_exact_observation",
+
+            "rawArtifactSha256":
+                raw_artifact_hash,
+
+            "rawPath":
+                str(
+                    raw_path
+                ),
+
+            "manifestPath":
+                str(
+                    manifest_path
+                ),
+
+            "parquetPaths":
+                [],
+
+            "databaseWrites":
+                0,
+
+            "database":
+                None,
+        }
+
+
+        print("")
+        print(
+            "=== INGESTION ARTIFACTS ==="
+        )
+
+        print(
+            json.dumps(
+                summary,
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+
+
+        print("")
+        print(
+            "=============================================="
+        )
+        print(
+            "OH13 COMTRADE NO-DATA INGESTION PASSED"
+        )
+        print(
+            "=============================================="
+        )
+
+
+        return 0
 
 
     normalized = normalize_record(

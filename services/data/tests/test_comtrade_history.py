@@ -5,6 +5,7 @@ import tempfile
 import unittest
 
 from pathlib import Path
+from unittest.mock import patch
 
 
 DATA_ROOT = (
@@ -33,6 +34,7 @@ from connectors.comtrade_history import (
     checkpoint_counts,
     classify_failure,
     create_checkpoint,
+    execute_task,
     load_or_create_checkpoint,
     plan_id_for,
     plan_specification,
@@ -44,6 +46,81 @@ from connectors.comtrade_history import (
 class ComtradeHistoricalPlannerTest(
     unittest.TestCase
 ):
+
+    def test_historical_child_explicitly_allows_no_data(
+        self,
+    ) -> None:
+
+        task = {
+            "reporterCode":
+                699,
+
+            "partnerCode":
+                784,
+
+            "period":
+                "2025",
+
+            "cmdCode":
+                "380210",
+
+            "flowCode":
+                "X",
+
+            "frequency":
+                "A",
+
+            "classification":
+                "HS",
+        }
+
+
+        with patch(
+            "connectors.comtrade_history.subprocess.run"
+        ) as run:
+
+            run.return_value.returncode = 0
+            run.return_value.stdout = ""
+            run.return_value.stderr = ""
+
+
+            success, error = execute_task(
+                task=
+                    task,
+
+                run_id=
+                    "test-no-data",
+
+                access_mode=
+                    "public_preview",
+
+                max_records=
+                    20,
+
+                apply=
+                    False,
+            )
+
+
+            self.assertTrue(
+                success
+            )
+
+            self.assertIsNone(
+                error
+            )
+
+
+            command = run.call_args.args[
+                0
+            ]
+
+
+            self.assertIn(
+                "--allow-no-data",
+                command,
+            )
+
 
     def test_transient_provider_failures_are_deferred(
         self,

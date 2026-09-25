@@ -1054,6 +1054,8 @@ def execute_task(
 
         "--run-id",
         run_id,
+
+        "--allow-no-data",
     ]
 
 

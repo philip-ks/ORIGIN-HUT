@@ -5,6 +5,7 @@ import sys
 import unittest
 
 from pathlib import Path
+from types import SimpleNamespace
 
 
 DATA_ROOT = (
@@ -29,6 +30,7 @@ from connectors.comtrade import (
     normalize_record,
     resolve_access_mode,
     resolve_max_records,
+    select_exact_record,
 )
 
 from storage.manifests import (
@@ -320,6 +322,79 @@ class ComtradeConnectorTest(
             resolve_max_records(
                 501,
                 "public_preview",
+            )
+
+
+    def test_zero_exact_records_can_be_explicitly_allowed(
+        self,
+    ) -> None:
+
+        args = SimpleNamespace(
+            reporter_code=699,
+            partner_code=784,
+            cmd_code="380210",
+            flow_code="X",
+        )
+
+
+        payload = {
+            "data":
+                [],
+        }
+
+
+        with self.assertRaises(
+            ConnectorError
+        ):
+
+            select_exact_record(
+                payload,
+                args,
+            )
+
+
+        self.assertIsNone(
+            select_exact_record(
+                payload,
+                args,
+                allow_no_data=True,
+            )
+        )
+
+
+    def test_multiple_exact_records_remain_invalid(
+        self,
+    ) -> None:
+
+        args = SimpleNamespace(
+            reporter_code=699,
+            partner_code=784,
+            cmd_code="380210",
+            flow_code="X",
+        )
+
+
+        payload = {
+            "data":
+                [
+                    copy.deepcopy(
+                        SAMPLE
+                    ),
+                    copy.deepcopy(
+                        SAMPLE
+                    ),
+                ],
+        }
+
+
+        with self.assertRaises(
+            ConnectorError
+        ):
+
+            select_exact_record(
+                payload,
+                args,
+                allow_no_data=True,
             )
 
 

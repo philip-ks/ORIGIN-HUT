@@ -95,6 +95,11 @@ UN Comtrade API
 - scheduled execution requires authenticated_data by default
 - unattended refresh rate is capped at 1 request per second
 - refresh dry-run performs no provider, PostgreSQL, checkpoint or budget-state writes
+- historical ingestion explicitly supports legitimate zero-observation provider responses
+- zero-observation ingestion preserves Bronze response plus a zero-record manifest
+- zero-observation ingestion creates no Silver Parquet or PostgreSQL trade fact
+- direct connector remains strict unless --allow-no-data is explicitly supplied
+- multiple exact provider observations remain a hard validation error
 - Python regression passed
 - API TypeScript typecheck passed
 - API build passed
