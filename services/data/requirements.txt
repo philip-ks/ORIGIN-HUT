@@ -3,3 +3,6 @@ pydantic
 pydantic-settings
 psycopg[binary]
 beautifulsoup4
+polars
+duckdb
+python-dotenv

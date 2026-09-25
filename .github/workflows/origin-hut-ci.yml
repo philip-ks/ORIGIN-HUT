@@ -1,0 +1,135 @@
+name: Origin Hut CI
+
+on:
+  push:
+    branches:
+      - main
+      - "work/**"
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: origin-hut-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+
+  node-api:
+
+    name: Node / API
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Typecheck API
+        run: npm run typecheck
+
+      - name: Build API
+        run: npm run build:api
+
+
+  python-data:
+
+    name: Python / Data
+
+    runs-on: ubuntu-latest
+
+    services:
+
+      postgres:
+
+        image: postgis/postgis:17-3.5
+
+        env:
+          POSTGRES_USER: originhut
+          POSTGRES_PASSWORD: originhut
+          POSTGRES_DB: originhut_oh13_test
+
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd "pg_isready -U originhut -d originhut_oh13_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql://originhut:originhut@127.0.0.1:5432/originhut_oh13_test
+      ORIGINHUT_RUN_DB_INTEGRATION: "1"
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/data/requirements.txt
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r services/data/requirements.txt
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Create required PostgreSQL extensions
+        run: |
+          psql "$DATABASE_URL" \
+            -v ON_ERROR_STOP=1 \
+            -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;" \
+            -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;" \
+            -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+
+      - name: Apply database migrations
+        run: |
+          for migration in database/migrations/*.sql; do
+            echo "Applying ${migration}"
+            psql "$DATABASE_URL" \
+              -v ON_ERROR_STOP=1 \
+              -f "$migration"
+          done
+
+      - name: Verify migration head
+        run: |
+          test "$(psql "$DATABASE_URL" -Atc "SELECT MAX(LPAD(version, 10, '0')) FROM schema_migrations;")" = "0000000013"
+
+      - name: Compile Python
+        run: |
+          python -m compileall -q services/data/src
+          python -m compileall -q services/data/tests
+
+      - name: Run Python unit and database integration tests
+        run: |
+          python -m unittest discover \
+            -s services/data/tests \
+            -p "test_*.py" \
+            -v
