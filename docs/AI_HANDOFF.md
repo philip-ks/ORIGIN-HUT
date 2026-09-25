@@ -100,6 +100,21 @@ UN Comtrade API
 - zero-observation ingestion creates no Silver Parquet or PostgreSQL trade fact
 - direct connector remains strict unless --allow-no-data is explicitly supplied
 - multiple exact provider observations remain a hard validation error
+- Windows Task Scheduler integration implemented for local-first Comtrade refresh execution
+- scheduled runner protected by Local\\OriginHutComtradeRefresh single-instance mutex
+- scheduler uses ignored services/data/config/comtrade_refresh.local.json runtime configuration
+- scheduler logs are written under ignored logs/comtrade-refresh runtime storage
+- Windows scheduled task Origin Hut - UN Comtrade Refresh registered successfully
+- scheduled task verified against infra/windows/Run-ComtradeRefresh.ps1
+- scheduled task configured daily at 03:00 local time
+- scheduled task intentionally remains disabled pending authenticated_data validation
+- scheduler launcher dry-run completed successfully with Python exit code 0
+- no production scheduled execution has occurred
+- Windows Task Scheduler runtime integration implemented for local-first refresh execution
+- scheduled runner uses a single-instance Windows mutex
+- scheduled runtime logs are written outside Git
+- scheduler uses a non-committed local refresh configuration
+- scheduled task registration defaults to disabled until authenticated access is validated
 - Python regression passed
 - API TypeScript typecheck passed
 - API build passed
@@ -206,6 +221,9 @@ Current 2024 identity invariant:
 docs/AI_HANDOFF.md
 services/data/requirements.txt
 services/data/config/comtrade_refresh.example.json
+infra/windows/Run-ComtradeRefresh.ps1
+infra/windows/Register-ComtradeRefreshTask.ps1
+docs/COMTRADE_REFRESH_SCHEDULER.md
 services/data/src/connectors/comtrade.py
 services/data/src/connectors/comtrade_canonical.py
 services/data/src/connectors/comtrade_history.py

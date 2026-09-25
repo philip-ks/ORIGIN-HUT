@@ -66,3 +66,6 @@ storage/temp/
 # Analytical runtime storage
 storage/parquet/*
 !storage/parquet/.gitkeep
+
+# Local scheduler configuration
+services/data/config/comtrade_refresh.local.json
