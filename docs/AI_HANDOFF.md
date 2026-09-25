@@ -87,6 +87,14 @@ UN Comtrade API
 - historical planner resume after provider HTTP 500 verified
 - 2024 planner apply reused immutable source record and canonical trade flow
 - 2023 planner apply inserted a new source record and canonical trade flow
+- scheduled UN Comtrade refresh orchestrator implemented
+- rolling annual refresh plans supported
+- daily provider-call budget ledger implemented
+- default scheduled budget reserves 50 of 500 provider calls as safety headroom
+- per-task call reservation accounts for connector retry attempts
+- scheduled execution requires authenticated_data by default
+- unattended refresh rate is capped at 1 request per second
+- refresh dry-run performs no provider, PostgreSQL, checkpoint or budget-state writes
 - Python regression passed
 - API TypeScript typecheck passed
 - API build passed
@@ -192,9 +200,11 @@ Current 2024 identity invariant:
 .github/workflows/origin-hut-ci.yml
 docs/AI_HANDOFF.md
 services/data/requirements.txt
+services/data/config/comtrade_refresh.example.json
 services/data/src/connectors/comtrade.py
 services/data/src/connectors/comtrade_canonical.py
 services/data/src/connectors/comtrade_history.py
+services/data/src/connectors/comtrade_refresh.py
 services/data/src/storage/__init__.py
 services/data/src/storage/manifests.py
 services/data/src/storage/parquet.py
@@ -202,6 +212,7 @@ services/data/tests/test_analytical_storage.py
 services/data/tests/test_comtrade_connector.py
 services/data/tests/test_comtrade_canonical.py
 services/data/tests/test_comtrade_history.py
+services/data/tests/test_comtrade_refresh.py
 services/data/tests/test_comtrade_postgres_integration.py
 database/migrations/013_trade_observation_revision_semantics.sql
 storage/parquet/.gitkeep

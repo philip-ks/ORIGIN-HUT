@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "comtrade_refresh_config_v1",
+  "settings": {
+    "requireAuthenticated": true,
+    "apply": true,
+    "providerDailyCallLimit": 500,
+    "reservedProviderCalls": 50,
+    "callsPerTaskReservation": 4,
+    "maxTasksPerRun": 100,
+    "requestsPerSecond": 1.0
+  },
+  "plans": [
+    {
+      "name": "activated-carbon-india-uae-annual",
+      "reporterCodes": [
+        699
+      ],
+      "partnerCodes": [
+        784
+      ],
+      "cmdCodes": [
+        "380210"
+      ],
+      "flowCodes": [
+        "X",
+        "M"
+      ],
+      "frequency": "A",
+      "classification": "HS",
+      "rollingYears": 2,
+      "endYearOffset": -1,
+      "retryFailed": false
+    }
+  ]
+}
