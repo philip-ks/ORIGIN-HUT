@@ -20,19 +20,14 @@ if (-not [System.IO.Path]::IsPathRooted($ConfigPath)) {
 $ConfigPath = [System.IO.Path]::GetFullPath($ConfigPath)
 
 $Python = Join-Path $ProjectRoot "services\data\.venv\Scripts\python.exe"
-
 $RefreshScript = Join-Path $ProjectRoot "services\data\src\connectors\comtrade_refresh.py"
-
+$EnvFile = Join-Path $ProjectRoot ".env"
+$ComposeFile = Join-Path $ProjectRoot "infra\docker\compose.yml"
 $LogRoot = Join-Path $ProjectRoot "logs\comtrade-refresh"
 
-New-Item `
-    -ItemType Directory `
-    -Force `
-    -Path $LogRoot |
-    Out-Null
+New-Item -ItemType Directory -Force -Path $LogRoot | Out-Null
 
 $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-
 $LogPath = Join-Path $LogRoot "comtrade-refresh-$Timestamp.log"
 
 
@@ -51,6 +46,26 @@ function Write-RefreshLog {
         -Path $LogPath `
         -Value $Line `
         -Encoding UTF8
+}
+
+
+function Write-LoggedOutput {
+
+    param(
+        [object]$Lines
+    )
+
+    foreach ($Item in @($Lines)) {
+
+        $Text = [string]$Item
+
+        Write-Host $Text
+
+        Add-Content `
+            -Path $LogPath `
+            -Value $Text `
+            -Encoding UTF8
+    }
 }
 
 
@@ -87,8 +102,7 @@ try {
 
     if (-not $LockAcquired) {
 
-        Write-RefreshLog `
-            "SKIP: another Origin Hut Comtrade refresh is already running."
+        Write-RefreshLog "SKIP: another Origin Hut Comtrade refresh is already running."
 
         return
     }
@@ -98,6 +112,102 @@ try {
     Write-RefreshLog "ProjectRoot=$ProjectRoot"
     Write-RefreshLog "ConfigPath=$ConfigPath"
     Write-RefreshLog "DryRun=$DryRun"
+
+
+    if (-not $DryRun) {
+
+        Write-RefreshLog "START PostgreSQL runtime preflight."
+
+
+        if (-not (Test-Path $EnvFile)) {
+            throw "Origin Hut .env file not found: $EnvFile"
+        }
+
+        if (-not (Test-Path $ComposeFile)) {
+            throw "Docker Compose file not found: $ComposeFile"
+        }
+
+        $DockerCommand =
+            Get-Command `
+                docker `
+                -ErrorAction SilentlyContinue
+
+        if ($null -eq $DockerCommand) {
+            throw "Docker CLI is not available on PATH."
+        }
+
+
+        $DockerOutput =
+            & docker compose `
+                --env-file $EnvFile `
+                -f $ComposeFile `
+                up `
+                -d `
+                postgres `
+                2>&1
+
+        $DockerExit = $LASTEXITCODE
+
+        Write-LoggedOutput `
+            -Lines $DockerOutput
+
+
+        if ($DockerExit -ne 0) {
+            throw "Unable to start Origin Hut PostgreSQL."
+        }
+
+
+        $Healthy = $false
+
+
+        for ($Attempt = 1; $Attempt -le 30; $Attempt++) {
+
+            $HealthOutput =
+                & docker inspect `
+                    --format "{{.State.Health.Status}}" `
+                    originhut-postgres `
+                    2>&1
+
+            $HealthExit = $LASTEXITCODE
+
+
+            if ($HealthExit -eq 0) {
+
+                $Health =
+                    [string](
+                        $HealthOutput |
+                        Select-Object -First 1
+                    )
+
+                $Health = $Health.Trim()
+
+
+                if ($Health -eq "healthy") {
+
+                    $Healthy = $true
+
+                    Write-RefreshLog "PostgreSQLHealth=healthy"
+
+                    break
+                }
+            }
+
+
+            Start-Sleep -Seconds 2
+        }
+
+
+        if (-not $Healthy) {
+            throw "Origin Hut PostgreSQL did not become healthy within 60 seconds."
+        }
+
+
+        Write-RefreshLog "PASS PostgreSQL runtime preflight."
+    }
+    else {
+
+        Write-RefreshLog "SKIP PostgreSQL preflight for dry-run."
+    }
 
 
     $Arguments = @(
@@ -112,21 +222,14 @@ try {
     }
 
 
-    $Output = & $Python @Arguments 2>&1
+    $OutputLines =
+        & $Python @Arguments 2>&1
+
     $ExitCode = $LASTEXITCODE
 
 
-    foreach ($OutputLine in $Output) {
-
-        $Text = [string]$OutputLine
-
-        Write-Host $Text
-
-        Add-Content `
-            -Path $LogPath `
-            -Value $Text `
-            -Encoding UTF8
-    }
+    Write-LoggedOutput `
+        -Lines $OutputLines
 
 
     Write-RefreshLog "PythonExitCode=$ExitCode"

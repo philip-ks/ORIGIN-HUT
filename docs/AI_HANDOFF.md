@@ -113,11 +113,15 @@ UN Comtrade API
 - scheduled task intentionally remains disabled pending authenticated_data validation
 - scheduler launcher dry-run completed successfully with Python exit code 0
 - no production scheduled execution has occurred
-- Windows Task Scheduler runtime integration implemented for local-first refresh execution
-- scheduled runner uses a single-instance Windows mutex
-- scheduled runtime logs are written outside Git
-- scheduler uses a non-committed local refresh configuration
-- scheduled task registration defaults to disabled until authenticated access is validated
+- real authenticated UN Comtrade Data API request passed
+- authenticated subscription-key transport passed credential-leak scans
+- controlled authenticated refresh apply completed 4 of 4 tasks
+- controlled refresh produced 2 observation runs and 2 valid no-data runs
+- controlled refresh reserved 16 provider calls for retry headroom
+- 2024 authenticated acquisition reused the existing source record and canonical trade flow
+- 2024 canonical provenance remains public_preview while authenticated acquisition is preserved in ingestion_runs
+- 2025 export inserted a new authenticated source record and canonical trade flow
+- scheduled runner now starts and health-checks PostgreSQL before production execution
 - Python regression passed
 - API TypeScript typecheck passed
 - API build passed
@@ -127,23 +131,23 @@ UN Comtrade API
 ## Current Database State
 
 data_sources: 5
-ingestion_runs: 9
-source_records: 123981
-ingestion_run_records: 123983
-entity_source_links: 123975
-trade_flows: 2
+ingestion_runs: 11
+source_records: 123982
+ingestion_run_records: 123985
+entity_source_links: 123976
+trade_flows: 3
 migration_head: 013
 
 ## Current Comtrade State
 
 data_sources: 1
-ingestion_runs: 4
-completed_runs: 4
+ingestion_runs: 6
+completed_runs: 6
 failed_runs: 0
-source_records: 2
-ingestion_run_records: 4
-trade_flows: 2
-provenance_links: 2
+source_records: 3
+ingestion_run_records: 6
+trade_flows: 3
+provenance_links: 3
 
 ## Verified Canonical Observation
 
@@ -187,6 +191,28 @@ status: published
 isProvisional: null
 sourceAccessMode: public_preview
 providerRevisionStatus: unknown
+
+## Verified 2025 Authenticated Observation
+
+reporterISO3: IND
+partnerISO3: ARE
+flowDirection: export
+classification: HS2022
+hsCode: 380210
+periodStart: 2025-01-01
+periodEnd: 2025-12-31
+periodType: annual
+quantity: 3991130
+quantityUnit: kg
+netWeightKg: 3991130
+tradeValueUsd: 9841431.458
+status: published
+isProvisional: null
+sourceAccessMode: authenticated_data
+
+2024 and 2025 import tasks returned valid zero-observation results
+and therefore created no Parquet trade observation and no PostgreSQL
+trade_flow fact.
 
 ## Idempotency Proof
 
@@ -262,9 +288,9 @@ Complete OH13 production hardening.
 
 Priority checks:
 
-- configure a real UN Comtrade API subscription key and live-test authenticated_data query transport
-- enable the registered Windows scheduler only after authenticated_data live validation
-- validate unattended retry/backoff and daily call-budget behavior with authenticated traffic
+- complete CI validation for PostgreSQL-aware Windows scheduler runner
+- enable and smoke-test the registered daily 03:00 Windows scheduler
+- validate unattended retry/backoff behavior if live provider throttling/transient failures occur
 - evaluate premium bulk ingestion for very large reporter-period datasets
 - finalize production storage for Bronze raw artifacts and Silver Parquet outside Git
 
