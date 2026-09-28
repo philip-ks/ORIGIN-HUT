@@ -40,6 +40,10 @@ import {
   marketIntelligenceRoutes
 } from "./routes/market-intelligence.js";
 
+import {
+  counterpartyIntelligenceRoutes
+} from "./routes/counterparties.js";
+
 
 const app = Fastify({
   logger: true
@@ -81,6 +85,10 @@ await app.register(
 
 await app.register(
   marketIntelligenceRoutes
+);
+
+await app.register(
+  counterpartyIntelligenceRoutes
 );
 
 

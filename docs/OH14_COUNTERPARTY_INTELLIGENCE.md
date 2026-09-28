@@ -506,3 +506,45 @@ from:
 from:
 
     future shipment-level evidence.
+
+
+## OH14.2 Implementation
+
+Counterparty discovery endpoint:
+
+    GET /api/intelligence/counterparties
+
+Implemented filters:
+
+    q
+    country
+    marketCountry
+    activityType
+    hsCode
+    hsNomenclature
+    productId
+    status
+    minimumConfidence
+    limit
+    offset
+
+Pagination is organization-based rather than activity-row based.
+
+Each matched organization exposes:
+
+    canonical organization identity
+    country
+    roles
+    matchedActivityCount
+    matchedActivities
+    activity confidence
+    product
+    HS code
+    market country
+    canonical source
+    evidence count
+    source coverage count
+
+The endpoint queries organization_trade_activities only.
+
+It does not infer companies from aggregate trade_flows.
