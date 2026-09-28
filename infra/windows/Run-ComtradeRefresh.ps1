@@ -137,19 +137,46 @@ try {
         }
 
 
-        $DockerOutput =
-            & docker compose `
-                --env-file $EnvFile `
-                -f $ComposeFile `
-                up `
-                -d `
-                postgres `
-                2>&1
+        $DockerPath =
+            $DockerCommand.Source
 
-        $DockerExit = $LASTEXITCODE
+
+        $PreviousNativeErrorActionPreference =
+            $ErrorActionPreference
+
+
+        try {
+
+            $ErrorActionPreference =
+                "Continue"
+
+
+            $DockerOutput =
+                & $DockerPath compose `
+                    --env-file $EnvFile `
+                    -f $ComposeFile `
+                    up `
+                    -d `
+                    postgres `
+                    2>&1
+
+
+            $DockerExit =
+                $LASTEXITCODE
+        }
+        finally {
+
+            $ErrorActionPreference =
+                $PreviousNativeErrorActionPreference
+        }
+
 
         Write-LoggedOutput `
             -Lines $DockerOutput
+
+
+        Write-RefreshLog `
+            "DockerComposeExitCode=$DockerExit"
 
 
         if ($DockerExit -ne 0) {
@@ -162,13 +189,31 @@ try {
 
         for ($Attempt = 1; $Attempt -le 30; $Attempt++) {
 
-            $HealthOutput =
-                & docker inspect `
-                    --format "{{.State.Health.Status}}" `
-                    originhut-postgres `
-                    2>&1
+            $PreviousNativeErrorActionPreference =
+                $ErrorActionPreference
 
-            $HealthExit = $LASTEXITCODE
+
+            try {
+
+                $ErrorActionPreference =
+                    "Continue"
+
+
+                $HealthOutput =
+                    & $DockerPath inspect `
+                        --format "{{.State.Health.Status}}" `
+                        originhut-postgres `
+                        2>&1
+
+
+                $HealthExit =
+                    $LASTEXITCODE
+            }
+            finally {
+
+                $ErrorActionPreference =
+                    $PreviousNativeErrorActionPreference
+            }
 
 
             if ($HealthExit -eq 0) {
@@ -222,10 +267,28 @@ try {
     }
 
 
-    $OutputLines =
-        & $Python @Arguments 2>&1
+    $PreviousNativeErrorActionPreference =
+        $ErrorActionPreference
 
-    $ExitCode = $LASTEXITCODE
+
+    try {
+
+        $ErrorActionPreference =
+            "Continue"
+
+
+        $OutputLines =
+            & $Python @Arguments 2>&1
+
+
+        $ExitCode =
+            $LASTEXITCODE
+    }
+    finally {
+
+        $ErrorActionPreference =
+            $PreviousNativeErrorActionPreference
+    }
 
 
     Write-LoggedOutput `

@@ -122,6 +122,11 @@ UN Comtrade API
 - 2024 canonical provenance remains public_preview while authenticated acquisition is preserved in ingestion_runs
 - 2025 export inserted a new authenticated source record and canonical trade flow
 - scheduled runner now starts and health-checks PostgreSQL before production execution
+- Windows PowerShell 5.1 native stderr behavior reproduced and fixed
+- Docker and Python native processes are now governed by actual exit code rather than harmless stderr output
+- exact powershell.exe production runtime verification passed with DockerComposeExitCode 0
+- exact powershell.exe production runtime verification resolved authenticated_data with selectedTasks 0
+- exact powershell.exe zero-task runtime verification left PostgreSQL counts unchanged
 - Python regression passed
 - API TypeScript typecheck passed
 - API build passed

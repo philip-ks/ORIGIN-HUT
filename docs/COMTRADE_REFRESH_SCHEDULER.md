@@ -37,6 +37,22 @@ For a production invocation the runner:
 4. launches the refresh orchestrator;
 5. records the exit status in the local runtime log.
 
+Windows PowerShell 5.1 compatibility is explicitly handled for native
+processes. Docker and Python output may arrive through stderr even when
+the native process succeeds, so the runner temporarily allows native
+output and evaluates the actual process exit code before deciding
+whether the invocation failed.
+
+Verified under the same powershell.exe runtime used by Task Scheduler:
+
+    DockerComposeExitCode=0
+    PostgreSQLHealth=healthy
+    accessMode=authenticated_data
+    selectedTasks=0
+    PythonExitCode=0
+
+The zero-task verification produced no PostgreSQL data changes.
+
 Dry-run execution deliberately skips PostgreSQL startup and makes no
 provider, PostgreSQL, checkpoint, or call-budget state changes.
 
