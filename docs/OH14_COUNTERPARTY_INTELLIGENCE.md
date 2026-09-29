@@ -629,3 +629,39 @@ Alias provenance semantics:
 - normalized_alias is used for conservative identity matching
 - source_record_id records the first observed source for one literal alias
 - entity_source_links preserves all source evidence for that alias
+
+
+## OH14.5 Organization Intelligence Detail APIs
+
+OH14.5 adds read-only organization intelligence sub-resources without
+introducing a new database migration.
+
+Implemented endpoints:
+
+    GET /api/organizations/:id/intelligence
+
+        compact organization intelligence summary including role,
+        product, trade-activity, alias, relationship, evidence and
+        source-coverage counts.
+
+    GET /api/organizations/:id/trade-activities
+
+        paginated product / HS / market scoped commercial activities
+        with confidence, canonical source and evidence coverage.
+
+    GET /api/organizations/:id/aliases
+
+        paginated literal aliases with normalized identity key,
+        alias type, first observed source and provenance coverage.
+
+    GET /api/organizations/:id/evidence
+
+        paginated evidence links across the organization itself,
+        organization aliases and organization trade activities.
+
+The organization overview endpoint remains intentionally lightweight.
+Products and relationships remain separate existing sub-resources.
+
+The evidence list does not return the full raw source payload. It
+returns inspectable source-record metadata and data-source provenance;
+raw source payload remains in the provenance/storage layer.

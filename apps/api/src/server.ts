@@ -25,6 +25,10 @@ import {
 } from "./routes/organizations.js";
 
 import {
+  organizationIntelligenceRoutes
+} from "./routes/organization-intelligence.js";
+
+import {
   relationshipRoutes
 } from "./routes/relationships.js";
 
@@ -69,6 +73,10 @@ await app.register(
 
 await app.register(
   organizationRoutes
+);
+
+await app.register(
+  organizationIntelligenceRoutes
 );
 
 await app.register(
