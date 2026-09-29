@@ -1083,9 +1083,9 @@ def validate_source_evidence(
                     ],
 
                 "productId":
-                    activity[
+                    activity.get(
                         "productId"
-                    ],
+                    ),
 
                 **result,
             }
@@ -2115,9 +2115,9 @@ def upsert_activity(
 
     product_id = resolve_product_scope(
         connection,
-        activity[
+        activity.get(
             "productId"
-        ],
+        ),
         hs_code_id,
     )
 
@@ -2509,9 +2509,9 @@ def apply_source(
                     ],
 
                 "productId":
-                    activity[
+                    activity.get(
                         "productId"
-                    ],
+                    ),
 
                 "hsCode":
                     activity[
