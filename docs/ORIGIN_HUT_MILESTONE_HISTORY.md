@@ -18,6 +18,7 @@
 | OH14.2 | `19b5b6d` | Counterparty intelligence API |
 | OH14.3 | `ca3b0df` | Reusable company-web intelligence connector |
 | OH14.4 | `1de53b5` | Organization aliases + conservative identity resolution |
+| OH14.5 | `7e89044` | Organization intelligence detail/evidence APIs |
 
 ## Persistent decisions by milestone
 
@@ -93,9 +94,23 @@ Final proof:
 - OH13 production DB unchanged
 - GitHub Actions run #27 passed Python/Data and Node/API
 
-## Next
+### OH14.5
+Commit `7e89044`.
 
-OH14.5: organization activity/evidence/detail APIs.
+Added read-only organization intelligence sub-resources for summary, trade activities, aliases and evidence/source coverage without introducing migration 016.
+
+Final proof:
+
+- migrations 001–015 applied cleanly
+- API typecheck/build passed
+- live disposable-database API proof passed
+- summary, trade activities, aliases and evidence endpoints passed
+- evidence filtering passed
+- migration head remained 015
+- OH13 production database remained unchanged
+- GitHub Actions run #29 passed
+
+## Next
 
 OH14.6: activated-carbon India/UAE end-to-end counterparty proof around HS2022 `380210`.
 

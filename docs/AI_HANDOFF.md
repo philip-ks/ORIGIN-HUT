@@ -115,22 +115,29 @@ Important boundaries:
 
 ### OH14.5 — Organization activity / evidence / detail endpoints
 
-Expected direction:
+Commit: `7e89044`
 
-- expand organization detail with trade activities
-- expose activity evidence/source coverage
-- expose alias/source identity evidence where useful
-- preserve canonical/provenance boundaries
-- support future tabbed organization UI:
-  - Overview
-  - Products
-  - Trade
-  - Relationships
-  - Locations
-  - Sources
-  - Documents
+Verified endpoints:
 
-## Later OH14 target
+- `GET /api/organizations/:id/intelligence`
+- `GET /api/organizations/:id/trade-activities`
+- `GET /api/organizations/:id/aliases`
+- `GET /api/organizations/:id/evidence`
+
+Verification:
+
+- GitHub Actions run #29 passed Node/API and Python/Data
+- disposable PostgreSQL proof applied migrations 001–015
+- API started successfully on the disposable database
+- intelligence summary passed
+- trade-activities endpoint passed with HS2022 380210 / India filtering
+- alias endpoint preserved literal + normalized identity semantics
+- evidence/source endpoint returned organization, alias and activity provenance
+- evidence entityType filter passed
+- migration head remained 015
+- OH13 production remained unchanged at `11|123982|3`
+
+## Current next increment
 
 ### OH14.6 — Activated-carbon India/UAE end-to-end counterparty proof
 

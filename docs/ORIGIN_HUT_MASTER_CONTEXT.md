@@ -169,8 +169,8 @@ Completed:
 
 Next:
 
-- OH14.5 organization activity/evidence/detail endpoints
-- OH14.6 activated-carbon India/UAE end-to-end proof
+- OH14.5 organization activity/evidence/detail endpoints — complete and verified
+- OH14.6 activated-carbon India/UAE end-to-end proof — next
 
 ## Historical UI note
 
