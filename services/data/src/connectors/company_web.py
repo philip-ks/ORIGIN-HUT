@@ -34,6 +34,13 @@ from connectors.comtrade_canonical import (
     database_url,
 )
 
+from identity.organizations import (
+    IdentityResolutionError,
+    organization_identity_lock_key,
+    record_source_alias,
+    resolve_organization_identity,
+)
+
 from storage.manifests import (
     artifact_descriptor,
     build_manifest,
@@ -409,10 +416,10 @@ def normalize_hs_code(
 
 def confidence_value(
     value: Any,
-) -> float:
+) -> float | None:
 
     if value is None:
-        return 1.0
+        return None
 
 
     try:
@@ -1627,78 +1634,12 @@ def preserve_source_record(
     )
 
 
-def find_organization_rows(
-    connection: psycopg.Connection,
-    organization: dict[str, Any],
-    country_id: str,
-) -> list[
-    tuple[Any, ...]
-]:
-
-    lei = organization[
-        "lei"
-    ]
-
-    registration_number = organization[
-        "registrationNumber"
-    ]
-
-
-    if lei:
-
-        return connection.execute(
-            """
-            SELECT id
-            FROM organizations
-            WHERE LOWER(lei) =
-                  LOWER(%s)
-            """,
-            (
-                lei,
-            ),
-        ).fetchall()
-
-
-    if registration_number:
-
-        return connection.execute(
-            """
-            SELECT id
-            FROM organizations
-            WHERE
-                country_id = %s
-                AND registration_number = %s
-            """,
-            (
-                country_id,
-                registration_number,
-            ),
-        ).fetchall()
-
-
-    return connection.execute(
-        """
-        SELECT id
-        FROM organizations
-        WHERE
-            country_id = %s
-            AND LOWER(legal_name) =
-                LOWER(%s)
-        """,
-        (
-            country_id,
-            organization[
-                "legalName"
-            ],
-        ),
-    ).fetchall()
-
-
 def resolve_or_create_organization(
     connection: psycopg.Connection,
     source: dict[str, Any],
     source_record_id: str,
 ) -> tuple[
+    str,
     str,
     str,
 ]:
@@ -1716,14 +1657,11 @@ def resolve_or_create_organization(
 
 
     lock_identity = (
-        "company_web:"
-        + organization[
-            "countryIso2"
-        ]
-        + ":"
-        + organization[
-            "legalName"
-        ].casefold()
+        organization_identity_lock_key(
+            connection,
+            organization,
+            country_id,
+        )
     )
 
 
@@ -1742,58 +1680,57 @@ def resolve_or_create_organization(
     )
 
 
-    rows = find_organization_rows(
-        connection,
-        organization,
-        country_id,
-    )
+    try:
 
-
-    if len(rows) > 1:
-
-        stop(
-            "Organization identity resolved to multiple rows: "
-            + organization[
-                "legalName"
-            ]
+        resolution = resolve_organization_identity(
+            connection,
+            organization,
+            country_id,
         )
 
+    except IdentityResolutionError as error:
 
-    if rows:
+        raise CompanyWebError(
+            str(
+                error
+            )
+        ) from None
 
-        organization_id = str(
-            rows[0][0]
+
+    if resolution.organization_id:
+
+        organization_id = (
+            resolution.organization_id
         )
 
         connection.execute(
             """
             UPDATE organizations
             SET
-                legal_name = %s,
                 trading_name =
                     COALESCE(
-                        %s,
-                        trading_name
+                        trading_name,
+                        %s
                     ),
                 website =
                     COALESCE(
-                        %s,
-                        website
+                        website,
+                        %s
                     ),
                 registration_number =
                     COALESCE(
-                        %s,
-                        registration_number
+                        registration_number,
+                        %s
                     ),
                 lei =
                     COALESCE(
-                        %s,
-                        lei
+                        lei,
+                        %s
                     ),
                 tax_identifier =
                     COALESCE(
-                        %s,
-                        tax_identifier
+                        tax_identifier,
+                        %s
                     ),
                 status = 'active',
                 metadata =
@@ -1802,9 +1739,6 @@ def resolve_or_create_organization(
             WHERE id = %s
             """,
             (
-                organization[
-                    "legalName"
-                ],
                 organization[
                     "tradingName"
                 ],
@@ -1829,6 +1763,15 @@ def resolve_or_create_organization(
 
                         "companyWebConnectorVersion":
                             CONNECTOR_VERSION,
+
+                        "identityResolutionMethod":
+                            resolution.method,
+
+                        "supportingDomainCandidates":
+                            list(
+                                resolution
+                                .supporting_domain_candidates
+                            ),
                     }
                 ),
                 organization_id,
@@ -1837,6 +1780,10 @@ def resolve_or_create_organization(
 
         organization_action = (
             "reused"
+        )
+
+        resolution_method = (
+            resolution.method
         )
 
     else:
@@ -1896,6 +1843,15 @@ def resolve_or_create_organization(
 
                         "companyWebConnectorVersion":
                             CONNECTOR_VERSION,
+
+                        "identityResolutionMethod":
+                            "created",
+
+                        "supportingDomainCandidates":
+                            list(
+                                resolution
+                                .supporting_domain_candidates
+                            ),
                     }
                 ),
             ),
@@ -1915,6 +1871,10 @@ def resolve_or_create_organization(
 
         organization_action = (
             "inserted"
+        )
+
+        resolution_method = (
+            "created"
         )
 
 
@@ -1939,6 +1899,44 @@ def resolve_or_create_organization(
                 role,
             ),
         )
+
+
+    for source_name in (
+        organization[
+            "legalName"
+        ],
+        organization[
+            "tradingName"
+        ],
+    ):
+
+        if not source_name:
+            continue
+
+
+        try:
+
+            record_source_alias(
+                connection,
+                organization_id=
+                    organization_id,
+                alias=
+                    source_name,
+                source_record_id=
+                    source_record_id,
+                source_code=
+                    source[
+                        "code"
+                    ],
+            )
+
+        except IdentityResolutionError as error:
+
+            raise CompanyWebError(
+                str(
+                    error
+                )
+            ) from None
 
 
     connection.execute(
@@ -1970,6 +1968,9 @@ def resolve_or_create_organization(
                         source[
                             "code"
                         ],
+
+                    "identityResolutionMethod":
+                        resolution_method,
                 }
             ),
         ),
@@ -1979,6 +1980,7 @@ def resolve_or_create_organization(
     return (
         organization_id,
         organization_action,
+        resolution_method,
     )
 
 
@@ -2106,7 +2108,11 @@ def upsert_activity(
             """
             UPDATE organization_trade_activities
             SET
-                confidence = %s,
+                confidence =
+                    COALESCE(
+                        %s,
+                        confidence
+                    ),
                 source_type =
                     'official_company_website',
                 canonical_source_record_id =
@@ -2327,6 +2333,7 @@ def apply_source(
     (
         organization_id,
         organization_action,
+        organization_resolution_method,
     ) = resolve_or_create_organization(
         connection,
         source,
@@ -2409,6 +2416,9 @@ def apply_source(
 
         "organizationAction":
             organization_action,
+
+        "organizationResolutionMethod":
+            organization_resolution_method,
 
         "activities":
             activity_results,

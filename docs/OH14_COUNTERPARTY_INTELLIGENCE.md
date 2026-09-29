@@ -397,8 +397,8 @@ Examples:
     local-language names
     source-specific names
 
-Alias support should be normalized in a later OH14 increment rather
-than storing every name variant directly on organizations.
+Alias support is normalized in OH14.4 through organization_aliases.
+Source-specific names remain separate from the canonical organization row.
 
 
 ## Location Model
@@ -454,13 +454,13 @@ Canonical organization_trade_activities schema.
 Counterparty intelligence API.
 
 ### OH14.3
-Organization activity and evidence endpoints.
+Reusable company-web intelligence connector.
 
 ### OH14.4
 Organization aliases / identity-resolution support.
 
 ### OH14.5
-First external organization intelligence connector.
+Organization activity / evidence / detail endpoints.
 
 ### OH14.6
 Activated-carbon India/UAE end-to-end counterparty proof.
@@ -586,3 +586,46 @@ Apply to PostgreSQL:
     python services/data/src/connectors/company_web.py \
       --config services/data/config/company_web_sources.example.json \
       --apply
+
+## OH14.4 Organization Identity Resolution
+
+OH14.4 introduces migration 015 and a conservative organization
+identity-resolution layer.
+
+Resolution precedence:
+
+    LEI exact
+        ->
+    registration number + country exact
+        ->
+    tax identifier + country exact
+        ->
+    known normalized alias + country
+        ->
+    no automatic match
+
+Supporting domains are observed but do not independently trigger an
+automatic merge.
+
+Ambiguous aliases and conflicting strong identifiers are hard stops.
+Name similarity alone never silently merges organizations.
+
+organization_aliases preserves canonical legal names, trading names,
+source-specific names, normalized match keys and source provenance.
+
+Company-web identity integration:
+
+- existing canonical legal names are preserved on reuse
+- source legal/trading names are recorded as aliases
+- resolution method is returned by the connector
+- missing evidence confidence remains NULL rather than defaulting to 1.0
+- organization search includes active aliases
+- counterparty search includes active aliases
+- supporting domain matches are recorded but do not independently auto-merge
+
+Alias provenance semantics:
+
+- literal spelling variants remain separate alias rows even when they normalize to the same identity key
+- normalized_alias is used for conservative identity matching
+- source_record_id records the first observed source for one literal alias
+- entity_source_links preserves all source evidence for that alias

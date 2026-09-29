@@ -174,10 +174,10 @@ class CompanyWebPostgresIntegrationTest(
                 """
                 SELECT id
                 FROM organizations
-                WHERE legal_name = %s
+                WHERE legal_name LIKE %s
                 """,
                 (
-                    self.LEGAL_NAME,
+                    "OH14 Company Web Integration Test%",
                 ),
             ).fetchall()
 
@@ -432,13 +432,28 @@ class CompanyWebPostgresIntegrationTest(
                 )
 
 
+            second_source = {
+                **source,
+
+                "organization":
+                    {
+                        **source[
+                            "organization"
+                        ],
+
+                        "legalName":
+                            "OH14 Company Web Integration Test Pvt. Ltd.",
+                    },
+            }
+
+
             with psycopg.connect(
                 database_url()
             ) as connection:
 
                 second = apply_source(
                     connection,
-                    source,
+                    second_source,
                     fetched,
                     evidence,
                     artifacts,
@@ -469,7 +484,30 @@ class CompanyWebPostgresIntegrationTest(
                     """
                     SELECT COUNT(*)
                     FROM organizations
-                    WHERE legal_name = %s
+                    WHERE legal_name LIKE
+                        'OH14 Company Web Integration Test%'
+                    """
+                ).fetchone()[0]
+
+
+                canonical_name = connection.execute(
+                    """
+                    SELECT legal_name
+                    FROM organizations
+                    WHERE legal_name LIKE
+                        'OH14 Company Web Integration Test%'
+                    LIMIT 1
+                    """
+                ).fetchone()[0]
+
+
+                alias_count = connection.execute(
+                    """
+                    SELECT COUNT(*)
+                    FROM organization_aliases oa
+                    JOIN organizations o
+                      ON o.id = oa.organization_id
+                    WHERE o.legal_name = %s
                     """,
                     (
                         self.LEGAL_NAME,
@@ -539,6 +577,26 @@ class CompanyWebPostgresIntegrationTest(
         self.assertEqual(
             ingestion_count,
             2,
+        )
+
+
+        self.assertEqual(
+            canonical_name,
+            self.LEGAL_NAME,
+        )
+
+
+        self.assertGreaterEqual(
+            alias_count,
+            3,
+        )
+
+
+        self.assertEqual(
+            second[
+                "organizationResolutionMethod"
+            ],
+            "alias",
         )
 
 

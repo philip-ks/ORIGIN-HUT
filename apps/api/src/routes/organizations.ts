@@ -688,6 +688,32 @@ export async function organizationRoutes(
 
               OR o.website ILIKE
                  '%' || $1 || '%'
+
+              OR EXISTS (
+                SELECT 1
+                FROM organization_aliases alias_filter
+                WHERE
+                  alias_filter.organization_id =
+                    o.id
+
+                  AND alias_filter.is_active =
+                    TRUE
+
+                  AND (
+                    alias_filter.alias ILIKE
+                      '%' || $1 || '%'
+
+                    OR alias_filter.normalized_alias ILIKE
+                      '%' ||
+                      NULLIF(
+                        originhut_normalize_organization_name(
+                          $1
+                        ),
+                        ''
+                      )
+                      || '%'
+                  )
+              )
             )
 
             AND (
@@ -748,6 +774,28 @@ export async function organizationRoutes(
                       )
                     ),
                     LOWER($1)
+                  ),
+                  COALESCE(
+                    (
+                      SELECT MAX(
+                        similarity(
+                          alias_rank.normalized_alias,
+                          NULLIF(
+                            originhut_normalize_organization_name(
+                              $1
+                            ),
+                            ''
+                          )
+                        )
+                      )
+                      FROM organization_aliases alias_rank
+                      WHERE
+                        alias_rank.organization_id =
+                          o.id
+                        AND alias_rank.is_active =
+                          TRUE
+                    ),
+                    0
                   )
                 )
               ELSE 0

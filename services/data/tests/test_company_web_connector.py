@@ -236,6 +236,66 @@ class CompanyWebConnectorTest(
         )
 
 
+    def test_missing_confidence_remains_null(
+        self,
+    ) -> None:
+
+        config = validate_config(
+            {
+                "sources":
+                    [
+                        {
+                            "code":
+                                "confidence_test",
+
+                            "name":
+                                "Confidence Test",
+
+                            "provider":
+                                "Confidence Test",
+
+                            "url":
+                                "https://example.com/",
+
+                            "organization":
+                                {
+                                    "legalName":
+                                        "Confidence Test Company",
+
+                                    "countryIso2":
+                                        "IN",
+                                },
+
+                            "activities":
+                                [
+                                    {
+                                        "activityType":
+                                            "supplies",
+
+                                        "hsCode":
+                                            "380210",
+
+                                        "marketCountryIso2":
+                                            "IN",
+                                    }
+                                ],
+                        }
+                    ]
+            }
+        )
+
+
+        self.assertIsNone(
+            config[
+                "sources"
+            ][0][
+                "activities"
+            ][0][
+                "confidence"
+            ]
+        )
+
+
     def test_config_rejects_invalid_hs_code(
         self,
     ) -> None:
