@@ -548,3 +548,41 @@ Each matched organization exposes:
 The endpoint queries organization_trade_activities only.
 
 It does not infer companies from aggregate trade_flows.
+
+## OH14.3 Company Web Intelligence Connector
+
+A reusable company-web connector is now available at:
+
+    services/data/src/connectors/company_web.py
+
+The connector is configuration-driven and supports:
+
+- live HTTP/HTTPS page acquisition
+- retry handling for transient provider failures
+- raw HTML Bronze artifact preservation
+- SHA-256 content hashing
+- manifest creation
+- HTML-to-text extraction
+- configurable evidence-term validation
+- immutable source-record reuse
+- independent ingestion-run audit history
+- organization identity resolution
+- organization role upserts
+- HS-scoped organization trade activity canonicalization
+- entity_source_links provenance
+- dry validation mode
+- PostgreSQL apply mode
+
+The connector deliberately does not infer shipment-level relationships
+or create exporter/importer claims from aggregate UN Comtrade data.
+
+Example:
+
+    python services/data/src/connectors/company_web.py \
+      --config services/data/config/company_web_sources.example.json
+
+Apply to PostgreSQL:
+
+    python services/data/src/connectors/company_web.py \
+      --config services/data/config/company_web_sources.example.json \
+      --apply

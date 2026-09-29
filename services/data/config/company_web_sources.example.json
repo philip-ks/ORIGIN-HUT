@@ -1,0 +1,73 @@
+{
+  "sources": [
+    {
+      "code": "jacobi_official_web",
+      "name": "Jacobi Group Official Website",
+      "provider": "Jacobi Group",
+      "url": "https://www.jacobi.net/contact/",
+      "official": true,
+      "organization": {
+        "legalName": "Jacobi Carbons India Private Limited",
+        "tradingName": "Jacobi Carbons India",
+        "countryIso2": "IN",
+        "website": "https://www.jacobi.net/",
+        "roles": [
+          "manufacturer"
+        ]
+      },
+      "activities": [
+        {
+          "activityType": "manufactures",
+          "hsCode": "380210",
+          "hsNomenclature": "HS2022",
+          "marketCountryIso2": "IN",
+          "confidence": 0.99,
+          "allTerms": [
+            "activated carbon"
+          ],
+          "anyTerms": [
+            "manufacturing",
+            "manufacturer",
+            "plant"
+          ],
+          "sourceClaim": "Official company website supports activated-carbon manufacturing activity in India."
+        }
+      ]
+    },
+    {
+      "code": "saiph_official_web",
+      "name": "Saiph Trading Official Website",
+      "provider": "Saiph Trading L.L.C-FZ",
+      "url": "https://www.saiphtrading.com/",
+      "official": true,
+      "organization": {
+        "legalName": "Saiph Trading L.L.C-FZ",
+        "tradingName": "Saiph Trading",
+        "countryIso2": "AE",
+        "website": "https://www.saiphtrading.com/",
+        "roles": [
+          "supplier"
+        ]
+      },
+      "activities": [
+        {
+          "activityType": "supplies",
+          "hsCode": "380210",
+          "hsNomenclature": "HS2022",
+          "marketCountryIso2": "AE",
+          "confidence": 0.99,
+          "allTerms": [
+            "activated carbon"
+          ],
+          "anyTerms": [
+            "supplier",
+            "supply",
+            "distribution",
+            "distributor"
+          ],
+          "sourceClaim": "Official company website supports activated-carbon supply activity in the UAE."
+        }
+      ]
+    }
+  ]
+}

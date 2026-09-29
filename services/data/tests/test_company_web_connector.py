@@ -1,0 +1,294 @@
+from __future__ import annotations
+
+import sys
+import unittest
+
+from pathlib import Path
+
+
+DATA_ROOT = (
+    Path(__file__)
+    .resolve()
+    .parents[1]
+)
+
+SRC_ROOT = (
+    DATA_ROOT
+    / "src"
+)
+
+sys.path.insert(
+    0,
+    str(SRC_ROOT),
+)
+
+
+from connectors.company_web import (
+    CompanyWebError,
+    evidence_result,
+    html_to_text,
+    validate_config,
+)
+
+
+class CompanyWebConnectorTest(
+    unittest.TestCase
+):
+
+    def test_html_to_text_removes_script_and_style(
+        self,
+    ) -> None:
+
+        raw = b"""
+        <html>
+          <head>
+            <style>.x { color: red; }</style>
+            <script>secretScript()</script>
+          </head>
+          <body>
+            <h1>Activated Carbon</h1>
+            <p>Manufacturer in India</p>
+          </body>
+        </html>
+        """
+
+
+        text = html_to_text(
+            raw
+        )
+
+
+        self.assertIn(
+            "Activated Carbon",
+            text,
+        )
+
+        self.assertIn(
+            "Manufacturer in India",
+            text,
+        )
+
+        self.assertNotIn(
+            "secretScript",
+            text,
+        )
+
+
+    def test_evidence_requires_all_and_any_terms(
+        self,
+    ) -> None:
+
+        result = evidence_result(
+            (
+                "We manufacture activated carbon "
+                "from coconut shell in India."
+            ),
+            {
+                "allTerms":
+                    [
+                        "activated carbon",
+                    ],
+
+                "anyTerms":
+                    [
+                        "manufacturer",
+                        "manufacture",
+                    ],
+            },
+        )
+
+
+        self.assertTrue(
+            result[
+                "passed"
+            ]
+        )
+
+
+        failed = evidence_result(
+            "Activated carbon products.",
+            {
+                "allTerms":
+                    [
+                        "activated carbon",
+                    ],
+
+                "anyTerms":
+                    [
+                        "manufacturer",
+                        "manufacture",
+                    ],
+            },
+        )
+
+
+        self.assertFalse(
+            failed[
+                "passed"
+            ]
+        )
+
+
+    def test_config_normalizes_activity_and_roles(
+        self,
+    ) -> None:
+
+        config = validate_config(
+            {
+                "sources":
+                    [
+                        {
+                            "code":
+                                "example_company",
+
+                            "name":
+                                "Example Official Website",
+
+                            "provider":
+                                "Example Company",
+
+                            "url":
+                                "https://example.com/",
+
+                            "official":
+                                True,
+
+                            "organization":
+                                {
+                                    "legalName":
+                                        "Example Company Pvt Ltd",
+
+                                    "countryIso2":
+                                        "in",
+
+                                    "roles":
+                                        [
+                                            "Manufacturer",
+                                            "Export Supplier",
+                                        ],
+                                },
+
+                            "activities":
+                                [
+                                    {
+                                        "activityType":
+                                            "Manufactures",
+
+                                        "hsCode":
+                                            "380210",
+
+                                        "marketCountryIso2":
+                                            "in",
+
+                                        "confidence":
+                                            0.95,
+
+                                        "allTerms":
+                                            [
+                                                "activated carbon",
+                                            ],
+
+                                        "anyTerms":
+                                            [
+                                                "manufacturer",
+                                            ],
+                                    }
+                                ],
+                        }
+                    ]
+            }
+        )
+
+
+        source = config[
+            "sources"
+        ][0]
+
+
+        self.assertEqual(
+            source[
+                "organization"
+            ][
+                "countryIso2"
+            ],
+            "IN",
+        )
+
+        self.assertEqual(
+            source[
+                "organization"
+            ][
+                "roles"
+            ],
+            [
+                "export_supplier",
+                "manufacturer",
+            ],
+        )
+
+        self.assertEqual(
+            source[
+                "activities"
+            ][0][
+                "activityType"
+            ],
+            "manufactures",
+        )
+
+
+    def test_config_rejects_invalid_hs_code(
+        self,
+    ) -> None:
+
+        with self.assertRaises(
+            CompanyWebError
+        ):
+
+            validate_config(
+                {
+                    "sources":
+                        [
+                            {
+                                "code":
+                                    "example",
+
+                                "name":
+                                    "Example",
+
+                                "provider":
+                                    "Example",
+
+                                "url":
+                                    "https://example.com/",
+
+                                "organization":
+                                    {
+                                        "legalName":
+                                            "Example",
+
+                                        "countryIso2":
+                                            "IN",
+                                    },
+
+                                "activities":
+                                    [
+                                        {
+                                            "activityType":
+                                                "supplies",
+
+                                            "hsCode":
+                                                "ABC",
+
+                                            "marketCountryIso2":
+                                                "AE",
+                                        }
+                                    ],
+                            }
+                        ]
+                }
+            )
+
+
+if __name__ == "__main__":
+
+    unittest.main()
