@@ -7,13 +7,26 @@ const rootEnvPath = fileURLToPath(
 );
 
 const result = config({
-  path: rootEnvPath
+  path: rootEnvPath,
+  quiet: true
 });
 
 if (result.error) {
-  throw new Error(
-    `Unable to load Origin Hut root environment from ${rootEnvPath}`
-  );
+
+  const code =
+    (
+      result.error
+      as NodeJS.ErrnoException
+    ).code;
+
+  if (code !== "ENOENT") {
+
+    throw new Error(
+      `Unable to load Origin Hut root environment from ${rootEnvPath}`
+    );
+
+  }
+
 }
 
 const envSchema = z.object({
