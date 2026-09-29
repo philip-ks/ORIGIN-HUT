@@ -1,312 +1,158 @@
-# Origin Hut - AI Development Handoff
+# Origin Hut — AI Development Handoff
 
-## Current Milestone
+**Snapshot:** 2026-09-29  
+**Current milestone:** OH14 — Counterparty Intelligence  
+**Development branch:** `work/oh14`  
+**Verified implementation HEAD:** `1de53b53c53b49b30ddd35cf9a114281116fb952` — `Add organization alias identity resolution`  
+**Base branch:** `main`  
+**Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
+**Schema head:** `015`
 
-OH13 - Analytical Storage & UN Comtrade Ingestion Foundation
+## Verified state
 
-## Development Branch
+OH14.4 is committed, pushed, locally proven, and GitHub-CI proven.
 
-work/oh13
+Local final post-provenance proof established:
 
-## Base Branch
-
-main
-
-## Last Completed Milestone
-
-OH12 - Trade Market Intelligence
-
-Commit:
-9a182e2 Add trade market intelligence API
-
-## OH13 Architecture
-
-UN Comtrade API
-  -> Bronze raw response + SHA-256 + manifest
-  -> Silver normalized partitioned Parquet
-  -> Curated PostgreSQL trade_flows + provenance
-  -> Market Intelligence API
-
-## Verified State
-
-- Analytical storage foundation created
-- Polars installed and tested
-- DuckDB installed and tested
-- Parquet write/read regression passed
-- Manifest/checksum regression passed
-- UN Comtrade Bronze/Silver connector implemented
-- India to UAE HS380210 2024 export live ingestion passed
-- Bronze raw-response checksum verified
-- record-level SHA-256 provenance verified
-- Silver Parquet checksum verified
-- DuckDB read-back verified
-- PostgreSQL canonicalization implemented
-- UN Comtrade data source registered
-- immutable trade_observation source record preserved
-- ingestion_run_records audit coverage verified
-- canonical trade_flow created
-- entity_source_links provenance verified
-- reporter and partner resolved through ISO3
-- repeated identical ingestion reuses source record
-- repeated identical ingestion reuses canonical trade_flow
-- second identical ingestion creates an independent ingestion audit run
-- canonical source-record pointer verified
-- raw trade value and FOB value verified against canonical trade_flow
-- aggregate transport mode 0 normalized to NULL
-- aggregate customs code C00 normalized to NULL
-- PostgreSQL integration suite established
-- revised Comtrade observation creates a new immutable source version
-- revised observation updates the existing canonical trade flow
-- World/W00 partner remains NULL through PostgreSQL canonicalization
-- monthly period normalization verified through PostgreSQL
-- disposable integration database verified against migrations 001-013
-- local PostgreSQL host connections normalize localhost to 127.0.0.1
-- PostgreSQL connection timeout hardened to 5 seconds
-- Migration 013 trade observation revision semantics applied
-- trade_flows.is_provisional is now tri-state
-- TRUE means explicitly provisional
-- FALSE means explicitly non-provisional
-- NULL means provider revision status unknown or not supplied
-- existing UN Comtrade observation corrected from FALSE to NULL
-- UN Comtrade public preview access mode preserved in metadata
-- provider revision status preserved as unknown
-- market intelligence no longer excludes unknown revision state by default
-- authenticated UN Comtrade Data API foundation implemented
-- UN_COMTRADE_API_KEY loaded from environment only
-- authenticated Data API transport uses the subscription-key query parameter
-- persisted audit URLs intentionally exclude the subscription-key credential
-- API credentials are not persisted in manifests, logs, provenance or analytical artifacts
-- authenticated HTTP failures are sanitized before reaching logs/checkpoints
-- public preview remains available as an explicit/fallback access mode
-- authenticated Data API uses safe 100000-record default
-- public preview retains 500-record limit
-- deterministic historical query planner implemented
-- historical task IDs are deterministic across equivalent plans
-- resumable JSON checkpoint state implemented outside Git
-- interrupted tasks recover to pending state
-- transient provider failures can be deferred and retried
-- planner-to-child connector access-mode mapping verified
-- live 2023 and 2024 multi-period planner execution verified
-- historical planner resume after provider HTTP 500 verified
-- 2024 planner apply reused immutable source record and canonical trade flow
-- 2023 planner apply inserted a new source record and canonical trade flow
-- scheduled UN Comtrade refresh orchestrator implemented
-- rolling annual refresh plans supported
-- daily provider-call budget ledger implemented
-- default scheduled budget reserves 50 of 500 provider calls as safety headroom
-- per-task call reservation accounts for connector retry attempts
-- scheduled execution requires authenticated_data by default
-- unattended refresh rate is capped at 1 request per second
-- refresh dry-run performs no provider, PostgreSQL, checkpoint or budget-state writes
-- historical ingestion explicitly supports legitimate zero-observation provider responses
-- zero-observation ingestion preserves Bronze response plus a zero-record manifest
-- zero-observation ingestion creates no Silver Parquet or PostgreSQL trade fact
-- direct connector remains strict unless --allow-no-data is explicitly supplied
-- multiple exact provider observations remain a hard validation error
-- Windows Task Scheduler integration implemented for local-first Comtrade refresh execution
-- scheduled runner protected by Local\\OriginHutComtradeRefresh single-instance mutex
-- scheduler uses ignored services/data/config/comtrade_refresh.local.json runtime configuration
-- scheduler logs are written under ignored logs/comtrade-refresh runtime storage
-- Windows scheduled task Origin Hut - UN Comtrade Refresh registered successfully
-- scheduled task verified against infra/windows/Run-ComtradeRefresh.ps1
-- scheduled task configured daily at 03:00 local time
-- scheduled task intentionally remains disabled pending authenticated_data validation
-- scheduler launcher dry-run completed successfully with Python exit code 0
-- no production scheduled execution has occurred
-- real authenticated UN Comtrade Data API request passed
-- authenticated subscription-key transport passed credential-leak scans
-- controlled authenticated refresh apply completed 4 of 4 tasks
-- controlled refresh produced 2 observation runs and 2 valid no-data runs
-- controlled refresh reserved 16 provider calls for retry headroom
-- 2024 authenticated acquisition reused the existing source record and canonical trade flow
-- 2024 canonical provenance remains public_preview while authenticated acquisition is preserved in ingestion_runs
-- 2025 export inserted a new authenticated source record and canonical trade flow
-- scheduled runner now starts and health-checks PostgreSQL before production execution
-- Windows PowerShell 5.1 native stderr behavior reproduced and fixed
-- Docker and Python native processes are now governed by actual exit code rather than harmless stderr output
-- exact powershell.exe production runtime verification passed with DockerComposeExitCode 0
-- exact powershell.exe production runtime verification resolved authenticated_data with selectedTasks 0
-- exact powershell.exe zero-task runtime verification left PostgreSQL counts unchanged
-- Python regression passed
+- migrations 001–015 apply cleanly
+- migration head = `0000000015`
+- literal alias spellings remain separate provenance rows
+- normalized aliases remain conservative identity match keys
+- zero normalized-alias conflict targets remain
+- four literal-alias conflict targets are present
+- ambiguous aliases do not auto-merge
+- conflicting strong identifiers stop resolution
+- Private Limited / Pvt. Ltd. variants can resolve through aliases
+- repeated company-web source ingestion remains idempotent
+- full Python regression passed: 48 tests
 - API TypeScript typecheck passed
 - API build passed
-- Migration 013 is schema head
-- Migration 013 verified on disposable and real local PostgreSQL databases
+- `git diff --check` passed
+- OH13 production database remained unchanged at `11|123982|3`
 
-## Current Database State
+GitHub Actions for commit `1de53b5`, run #27:
 
-data_sources: 5
-ingestion_runs: 11
-source_records: 123982
-ingestion_run_records: 123985
-entity_source_links: 123976
-trade_flows: 3
-migration_head: 013
+- Python / Data — success
+- Node / API — success
 
-## Current Comtrade State
+## OH14 objective
 
-data_sources: 1
-ingestion_runs: 6
-completed_runs: 6
-failed_runs: 0
-source_records: 3
-ingestion_run_records: 6
-trade_flows: 3
-provenance_links: 3
+Return source-backed organizations with product/HS/market-scoped commercial activities and inspectable evidence while preserving the distinction between:
 
-## Verified Canonical Observation
+1. statistical market evidence
+2. company-level evidence
+3. organization-to-organization relationships
+4. future shipment-level evidence
 
-reporterISO3: IND
-partnerISO3: ARE
-flowDirection: export
-classification: HS2022
-hsCode: 380210
-periodStart: 2024-01-01
-periodEnd: 2024-12-31
-periodType: annual
-quantity: 4268940
-quantityUnit: kg
-netWeightKg: 4268940
-grossWeightKg: 0
-tradeValueUsd: 6410583.797
-fobValueUsd: 6410583.797
-currency: USD
-status: published
-isProvisional: null
-sourceAccessMode: public_preview
-providerRevisionStatus: unknown
+## Completed OH14 sequence
 
-## Verified 2023 Historical Observation
+### OH14.1 — Trade activity model
 
-reporterISO3: IND
-partnerISO3: ARE
-flowDirection: export
-classification: HS2022
-hsCode: 380210
-periodStart: 2023-01-01
-periodEnd: 2023-12-31
-periodType: annual
-quantity: 3556760
-quantityUnit: kg
-netWeightKg: 3556760
-tradeValueUsd: 6130302.438
-fobValueUsd: 6130302.438
-currency: USD
-status: published
-isProvisional: null
-sourceAccessMode: public_preview
-providerRevisionStatus: unknown
+Commit: `c7d30cd`
 
-## Verified 2025 Authenticated Observation
+Introduced `organization_trade_activities` through migration 014.
 
-reporterISO3: IND
-partnerISO3: ARE
-flowDirection: export
-classification: HS2022
-hsCode: 380210
-periodStart: 2025-01-01
-periodEnd: 2025-12-31
-periodType: annual
-quantity: 3991130
-quantityUnit: kg
-netWeightKg: 3991130
-tradeValueUsd: 9841431.458
-status: published
-isProvisional: null
-sourceAccessMode: authenticated_data
+### OH14.2 — Counterparty intelligence API
 
-2024 and 2025 import tasks returned valid zero-observation results
-and therefore created no Parquet trade observation and no PostgreSQL
-trade_flow fact.
+Commit: `19b5b6d`
 
-## Idempotency Proof
+Implemented `GET /api/intelligence/counterparties`.
 
-First apply:
-- source record: inserted
-- trade flow: inserted
-- ingestion run: completed
+### OH14.3 — Reusable company-web intelligence connector
 
-Second identical apply:
-- source record: reused
-- trade flow: reused
-- ingestion run: completed
+Commit: `ca3b0df`
 
-2024 historical planner re-apply:
-- source record: reused
-- trade flow: reused
-- new ingestion audit run: completed
+Implemented source-backed company-web acquisition, evidence validation, canonicalization, provenance, and PostgreSQL apply support.
 
-Current 2024 identity invariant:
-- one logical 2024 Comtrade source record
-- one canonical 2024 Comtrade trade flow
-- one 2024 provenance link
-- three ingestion-run audit links for the 2024 source record
+### OH14.4 — Organization aliases and identity resolution
 
-2023 historical planner apply:
-- source record: inserted
-- trade flow: inserted
-- provenance link: inserted
-- ingestion run: completed
+Commit: `1de53b5`
 
-## Current OH13 Files
+Introduced migration 015, `organization_aliases`, conservative organization identity resolution, alias-aware organization/counterparty search, company-web identity integration, literal alias provenance preservation, and identity unit/PostgreSQL integration tests.
 
-.gitignore
-.github/workflows/origin-hut-ci.yml
-docs/AI_HANDOFF.md
-services/data/requirements.txt
-services/data/config/comtrade_refresh.example.json
-infra/windows/Run-ComtradeRefresh.ps1
-infra/windows/Register-ComtradeRefreshTask.ps1
-docs/COMTRADE_REFRESH_SCHEDULER.md
-services/data/src/connectors/comtrade.py
-services/data/src/connectors/comtrade_canonical.py
-services/data/src/connectors/comtrade_history.py
-services/data/src/connectors/comtrade_refresh.py
-services/data/src/storage/__init__.py
-services/data/src/storage/manifests.py
-services/data/src/storage/parquet.py
-services/data/tests/test_analytical_storage.py
-services/data/tests/test_comtrade_connector.py
-services/data/tests/test_comtrade_canonical.py
-services/data/tests/test_comtrade_history.py
-services/data/tests/test_comtrade_refresh.py
-services/data/tests/test_comtrade_postgres_integration.py
-database/migrations/013_trade_observation_revision_semantics.sql
-storage/parquet/.gitkeep
+Resolution precedence:
 
-## CI
+```text
+LEI exact
+  -> registration number + country exact
+  -> tax identifier + country exact
+  -> known normalized alias + country
+  -> no automatic match
+```
 
-GitHub Actions workflow:
-.github/workflows/origin-hut-ci.yml
+Supporting domains are evidence signals only and do not independently cause an automatic merge.
 
-Checks:
-- Node API typecheck
-- Node API build
-- Python compile
-- Python unit tests
-- PostgreSQL integration tests
-- migrations 001-013 applied in disposable PostGIS CI database
+Name similarity alone must never silently merge organizations.
 
-## Next Action
+## Core architecture
 
-Complete OH13 production hardening.
+- `apps/web` — Next.js frontend foundation
+- `apps/api` — TypeScript/Fastify application API
+- `services/data` — Python ingestion, canonicalization, provenance and analytical storage
+- `packages/shared` — shared application contracts/utilities
+- `database/migrations` — canonical PostgreSQL/PostGIS schema
+- `infra` — Docker/local/Windows scheduling infrastructure
 
-Priority checks:
+## Provenance model
 
-- complete CI validation for PostgreSQL-aware Windows scheduler runner
-- enable and smoke-test the registered daily 03:00 Windows scheduler
-- validate unattended retry/backoff behavior if live provider throttling/transient failures occur
-- evaluate premium bulk ingestion for very large reporter-period datasets
-- finalize production storage for Bronze raw artifacts and Silver Parquet outside Git
+External source facts should preserve a chain such as:
 
-## Development Workflow
+```text
+data_source
+  -> source_record
+  -> canonical entity/fact
+  -> entity_source_links
+```
 
-1. Edit and test locally in VS Code.
-2. Commit to work/oh13.
-3. Push work/oh13.
-4. GitHub Actions runs.
-5. ChatGPT reads repository and CI logs directly.
-6. Fix locally and repeat.
-7. Merge to main only after OH13 is green.
+Important boundaries:
 
-Raw PowerShell logs remain local and are not committed.
+- aggregate UN Comtrade facts must not create company-level claims automatically
+- organization role != product/HS/market activity
+- organization activity != organization-to-organization relationship
+- statistical market fact != shipment-level fact
+
+## Current next increment
+
+### OH14.5 — Organization activity / evidence / detail endpoints
+
+Expected direction:
+
+- expand organization detail with trade activities
+- expose activity evidence/source coverage
+- expose alias/source identity evidence where useful
+- preserve canonical/provenance boundaries
+- support future tabbed organization UI:
+  - Overview
+  - Products
+  - Trade
+  - Relationships
+  - Locations
+  - Sources
+  - Documents
+
+## Later OH14 target
+
+### OH14.6 — Activated-carbon India/UAE end-to-end counterparty proof
+
+Use HS2022 `380210` as the first complete source-backed counterparty vertical.
+
+## Workflow
+
+1. Edit/test locally in VS Code.
+2. Commit to the active work branch.
+3. Push.
+4. GitHub Actions validates.
+5. Read repository and CI directly.
+6. Merge to `main` only after the milestone is green and intentionally closed.
+
+Raw PowerShell command logs remain local unless sanitized.
+
+## Continuity files
+
+Future AI sessions should read, in order:
+
+1. `docs/ORIGIN_HUT_MASTER_CONTEXT.md`
+2. `docs/AI_HANDOFF.md`
+3. `docs/ORIGIN_HUT_MILESTONE_HISTORY.md`
+4. current milestone document
+5. active branch / HEAD / CI state
