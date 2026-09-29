@@ -10,6 +10,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 
 SOURCE_FILE = Path(__file__).resolve()
@@ -56,7 +57,7 @@ STORAGE_ROOT = (
 )
 
 CONNECTOR_VERSION = (
-    "company_web_v1"
+    "company_web_v2"
 )
 
 RECORD_TYPE = (
@@ -414,6 +415,38 @@ def normalize_hs_code(
     return result
 
 
+def product_id_value(
+    value: Any,
+) -> str | None:
+
+    if value is None:
+        return None
+
+
+    result = string_value(
+        value,
+        field="productId",
+        required=True,
+    )
+
+    assert result is not None
+
+
+    try:
+
+        return str(
+            UUID(
+                result
+            )
+        )
+
+    except ValueError:
+
+        stop(
+            "productId must be a valid UUID."
+        )
+
+
 def confidence_value(
     value: Any,
 ) -> float | None:
@@ -696,6 +729,13 @@ def validate_config(
                         normalize_hs_code(
                             raw_activity.get(
                                 "hsCode"
+                            )
+                        ),
+
+                    "productId":
+                        product_id_value(
+                            raw_activity.get(
+                                "productId"
                             )
                         ),
 
@@ -1042,6 +1082,11 @@ def validate_source_evidence(
                         "hsCode"
                     ],
 
+                "productId":
+                    activity[
+                        "productId"
+                    ],
+
                 **result,
             }
         )
@@ -1250,6 +1295,68 @@ def resolve_hs_code(
 
     return str(
         rows[0][0]
+    )
+
+
+def resolve_product_scope(
+    connection: psycopg.Connection,
+    product_id: str | None,
+    hs_code_id: str,
+) -> str | None:
+
+    if product_id is None:
+        return None
+
+
+    row = connection.execute(
+        """
+        SELECT p.id
+        FROM products p
+        WHERE
+            p.id = %s
+            AND p.is_active = TRUE
+        """,
+        (
+            product_id,
+        ),
+    ).fetchone()
+
+
+    if row is None:
+
+        stop(
+            "Configured productId does not resolve "
+            "to an active Origin Hut product: "
+            + product_id
+        )
+
+
+    classification = connection.execute(
+        """
+        SELECT 1
+        FROM product_hs_classifications
+        WHERE
+            product_id = %s
+            AND hs_code_id = %s
+        LIMIT 1
+        """,
+        (
+            product_id,
+            hs_code_id,
+        ),
+    ).fetchone()
+
+
+    if classification is None:
+
+        stop(
+            "Configured productId is not classified "
+            "to the configured HS code."
+        )
+
+
+    return str(
+        row[0]
     )
 
 
@@ -2006,6 +2113,15 @@ def upsert_activity(
         ],
     )
 
+    product_id = resolve_product_scope(
+        connection,
+        activity[
+            "productId"
+        ],
+        hs_code_id,
+    )
+
+
     market_country_id = resolve_country(
         connection,
         activity[
@@ -2021,6 +2137,11 @@ def upsert_activity(
         + activity[
             "activityType"
         ]
+        + ":"
+        + (
+            product_id
+            or "no_product"
+        )
         + ":"
         + hs_code_id
         + ":"
@@ -2050,7 +2171,8 @@ def upsert_activity(
         WHERE
             organization_id = %s
             AND activity_type = %s
-            AND product_id IS NULL
+            AND product_id
+                IS NOT DISTINCT FROM %s::uuid
             AND hs_code_id = %s
             AND market_country_id = %s
             AND status = 'active'
@@ -2062,6 +2184,7 @@ def upsert_activity(
             activity[
                 "activityType"
             ],
+            product_id,
             hs_code_id,
             market_country_id,
         ),
@@ -2083,7 +2206,14 @@ def upsert_activity(
             ],
 
         "subject":
-            "hs_code",
+            (
+                "product_hs"
+                if product_id
+                else "hs_code"
+            ),
+
+        "productId":
+            product_id,
 
         "sourceClaim":
             activity[
@@ -2155,7 +2285,7 @@ def upsert_activity(
             VALUES (
                 %s,
                 %s,
-                NULL,
+                %s,
                 %s,
                 %s,
                 'active',
@@ -2171,6 +2301,7 @@ def upsert_activity(
                 activity[
                     "activityType"
                 ],
+                product_id,
                 hs_code_id,
                 market_country_id,
                 activity[
@@ -2375,6 +2506,16 @@ def apply_source(
                 "activityType":
                     activity[
                         "activityType"
+                    ],
+
+                "productId":
+                    activity[
+                        "productId"
+                    ],
+
+                "hsCode":
+                    activity[
+                        "hsCode"
                     ],
 
                 "action":

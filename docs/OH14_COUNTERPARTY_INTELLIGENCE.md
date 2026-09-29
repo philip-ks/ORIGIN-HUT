@@ -576,6 +576,20 @@ The connector is configuration-driven and supports:
 The connector deliberately does not infer shipment-level relationships
 or create exporter/importer claims from aggregate UN Comtrade data.
 
+Company-web activities may optionally include an explicit Origin Hut
+`productId` in addition to the HS code. When supplied, the connector:
+
+- requires the product to exist and be active;
+- requires the product to already have an accepted classification to
+  the configured HS code;
+- canonicalizes the company activity against both `product_id` and
+  `hs_code_id`;
+- preserves the source evidence against the product-scoped activity.
+
+This allows OH14.6 to begin with a canonical Product and carry that
+same Product through company evidence instead of reverting to an
+HS-only workflow.
+
 Example:
 
     python services/data/src/connectors/company_web.py \

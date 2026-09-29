@@ -177,6 +177,9 @@ class CompanyWebConnectorTest(
                                         "hsCode":
                                             "380210",
 
+                                        "productId":
+                                            "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA",
+
                                         "marketCountryIso2":
                                             "in",
 
@@ -234,6 +237,72 @@ class CompanyWebConnectorTest(
             ],
             "manufactures",
         )
+
+
+        self.assertEqual(
+            source[
+                "activities"
+            ][0][
+                "productId"
+            ],
+            "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        )
+
+
+    def test_config_rejects_invalid_product_id(
+        self,
+    ) -> None:
+
+        with self.assertRaises(
+            CompanyWebError
+        ):
+
+            validate_config(
+                {
+                    "sources":
+                        [
+                            {
+                                "code":
+                                    "product_scope",
+
+                                "name":
+                                    "Product Scope",
+
+                                "provider":
+                                    "Product Scope",
+
+                                "url":
+                                    "https://example.com/",
+
+                                "organization":
+                                    {
+                                        "legalName":
+                                            "Product Scope Company",
+
+                                        "countryIso2":
+                                            "IN",
+                                    },
+
+                                "activities":
+                                    [
+                                        {
+                                            "activityType":
+                                                "supplies",
+
+                                            "hsCode":
+                                                "380210",
+
+                                            "productId":
+                                                "not-a-uuid",
+
+                                            "marketCountryIso2":
+                                                "IN",
+                                        }
+                                    ],
+                            }
+                        ]
+                }
+            )
 
 
     def test_missing_confidence_remains_null(
