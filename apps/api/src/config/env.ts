@@ -15,8 +15,9 @@ if (result.error) {
 
   const code =
     (
-      result.error
-      as NodeJS.ErrnoException
+      result.error as Error & {
+        code?: string;
+      }
     ).code;
 
   if (code !== "ENOENT") {
