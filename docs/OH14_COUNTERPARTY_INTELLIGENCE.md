@@ -463,7 +463,31 @@ Organization aliases / identity-resolution support.
 Organization activity / evidence / detail endpoints.
 
 ### OH14.6
-Activated-carbon India/UAE end-to-end counterparty proof.
+Activated-carbon India/UAE product-first end-to-end proof.
+
+Repository-tracked proof runner:
+
+    infra/windows/Run-OH14-6-Proof.ps1
+
+The proof is deliberately Product-first:
+
+    Activated Carbon Product
+        ->
+    explicit HS2022 380210 confirmation
+        ->
+    India/UAE statistical market evidence
+        ->
+    real official company-web evidence
+        ->
+    product-scoped organization activities
+        ->
+    product-filtered counterparties
+        ->
+    organization provenance
+
+The disposable proof uses the official Jacobi Group page for the India
+manufacturing claim and the official Saiph Trading page for the UAE
+supply claim. It must leave the production database unchanged.
 
 
 ## Non-Goals
