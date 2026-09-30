@@ -350,7 +350,7 @@ class ManufacturerProductPostgresIntegrationTest(
                     external_id,
                     record_type,
                     content_hash,
-                    raw_payload
+                    payload
                 )
                 VALUES (
                     %s,
