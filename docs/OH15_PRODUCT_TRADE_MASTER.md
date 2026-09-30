@@ -282,3 +282,32 @@ OH15 records that expose `canonical_source_record_id`:
 
 This guarantees that API writes and future direct ingestion paths
 preserve the same canonical provenance chain.
+
+
+## OH15.9 — End-to-End Product Trade Master Proof
+
+Repository-tracked proof runner:
+
+    infra/windows/Run-OH15-Proof.ps1
+
+The proof uses a unique disposable PostgreSQL database and synthetic
+Product-master evidence. It does not introduce unsourced commercial
+claims about a real manufacturer grade.
+
+The proof verifies the integrated chain:
+
+```text
+Generic Product
+  -> canonical base UOM
+  -> accepted HS classification
+  -> Manufacturer Product + explicit origin
+  -> structured specifications
+  -> packaging
+  -> manufacturing site
+  -> product document
+  -> compliance record
+  -> unified source provenance
+  -> Product Workbench build
+```
+
+Production database invariance is checked before and after the proof.
