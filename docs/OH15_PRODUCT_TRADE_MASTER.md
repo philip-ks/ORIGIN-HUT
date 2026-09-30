@@ -96,7 +96,21 @@ The API requires the selected manufacturer organization to carry the
 
 ### OH15.2 — Units of Measure
 
-Canonical UOM/dimension/conversion model.
+Implemented by migration 017.
+
+Physical units use UN/CEFACT Recommendation 20 common codes where
+applicable. The first canonical dimensions are:
+
+- mass: KGM, GRM, TNE
+- length: MTR, CMT, MMT
+- volume: MTQ, LTR
+
+Origin Hut stores conversion scale/offset against one canonical base
+unit per dimension and rejects cross-dimension automatic conversion.
+
+Packaging types are intentionally not treated as physical UOM.
+They belong to the later packaging model using UN/CEFACT
+Recommendation 21.
 
 ### OH15.3 — Structured Specifications
 

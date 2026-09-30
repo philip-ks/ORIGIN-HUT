@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `43230651da045a7d5759170d74d28812208e5ade` — `Use unique OH14.6 disposable databases`  
 **Base branch:** `main`  
 **Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
-**Schema head:** `016`
+**Schema head:** `017`
 
 ## Verified state
 
@@ -221,3 +221,24 @@ OH14 was fast-forwarded into `main` at
 OH15.1 begins with Manufacturer Product Identity. Generic
 `products` remain the stable trade concept. Manufacturer-specific
 grade/SKU/GTIN/origin belongs in `manufacturer_products`.
+
+
+## OH15.2 — Units of Measure
+
+Migration 017 introduces a canonical unit-of-measure reference layer
+using UN/CEFACT Recommendation 20 common codes for physical units.
+
+Initial safe-conversion dimensions:
+
+- mass: KGM, GRM, TNE
+- length: MTR, CMT, MMT
+- volume: MTQ, LTR
+
+Automatic conversion is permitted only inside the same dimension.
+Cross-dimension conversion (for example kilograms to litres) is
+rejected unless a later product-specific rule supplies the required
+physical relationship.
+
+Packaging codes are deliberately deferred to the packaging milestone
+and should use UN/CEFACT Recommendation 21 rather than being mixed
+into physical UOM.
