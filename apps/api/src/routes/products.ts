@@ -16,6 +16,17 @@ const jsonObjectSchema =
   );
 
 
+const uomCodeSchema =
+  z.string()
+    .trim()
+    .min(1)
+    .max(20)
+    .transform(
+      value =>
+        value.toUpperCase()
+    );
+
+
 const productParamsSchema =
   z.object({
 
@@ -114,6 +125,11 @@ const createProductSchema =
       .nullable()
       .optional(),
 
+    baseUomCode:
+      uomCodeSchema
+        .nullable()
+        .optional(),
+
     attributes:
       jsonObjectSchema
         .default({}),
@@ -176,6 +192,11 @@ const updateProductSchema =
       .max(5000)
       .nullable()
       .optional(),
+
+    baseUomCode:
+      uomCodeSchema
+        .nullable()
+        .optional(),
 
     attributes:
       jsonObjectSchema
@@ -284,6 +305,42 @@ async function loadManufacturerEligibility(
 }
 
 
+async function loadBaseUnit(
+  code: string | null | undefined
+) {
+
+  if (!code) {
+    return null;
+  }
+
+
+  const result =
+    await database.query(
+      `
+      SELECT
+        id::text,
+        code,
+        name,
+        symbol,
+        is_active
+          AS "isActive"
+      FROM units_of_measure
+      WHERE code = $1
+      `,
+      [
+        code
+      ]
+    );
+
+
+  return (
+    result.rows[0]
+    ?? null
+  );
+
+}
+
+
 async function loadProduct(
   id: string
 ) {
@@ -300,6 +357,19 @@ async function loadProduct(
         p.sku,
         p.gtin,
         p.description,
+
+        p.base_uom_id::text
+          AS "baseUomId",
+
+        base_uom.code
+          AS "baseUomCode",
+
+        base_uom.name
+          AS "baseUomName",
+
+        base_uom.symbol
+          AS "baseUomSymbol",
+
         p.attributes,
         p.metadata,
         p.is_active
@@ -338,6 +408,10 @@ async function loadProduct(
       LEFT JOIN organizations o
         ON o.id =
            p.manufacturer_id
+
+      LEFT JOIN units_of_measure base_uom
+        ON base_uom.id =
+           p.base_uom_id
 
       WHERE p.id =
             $1::uuid
@@ -410,6 +484,19 @@ export async function productRoutes(
             p.sku,
             p.gtin,
             p.description,
+
+            p.base_uom_id::text
+              AS "baseUomId",
+
+            base_uom.code
+              AS "baseUomCode",
+
+            base_uom.name
+              AS "baseUomName",
+
+            base_uom.symbol
+              AS "baseUomSymbol",
+
             p.attributes,
             p.metadata,
 
@@ -436,6 +523,10 @@ export async function productRoutes(
           LEFT JOIN organizations o
             ON o.id =
                p.manufacturer_id
+
+          LEFT JOIN units_of_measure base_uom
+            ON base_uom.id =
+               p.base_uom_id
 
           WHERE
             (
@@ -655,6 +746,37 @@ export async function productRoutes(
       }
 
 
+      const baseUom =
+        await loadBaseUnit(
+          body.data.baseUomCode
+        );
+
+
+      if (
+        body.data.baseUomCode
+        && (
+          !baseUom
+          || !baseUom.isActive
+        )
+      ) {
+
+        reply.code(404);
+
+        return {
+
+          ok: false,
+
+          error:
+            "base_uom_not_found",
+
+          baseUomCode:
+            body.data.baseUomCode
+
+        };
+
+      }
+
+
       try {
 
         const result =
@@ -667,6 +789,7 @@ export async function productRoutes(
                 sku,
                 gtin,
                 description,
+                base_uom_id,
                 attributes,
                 metadata,
                 is_active
@@ -678,9 +801,10 @@ export async function productRoutes(
                 $4,
                 $5,
                 $6,
-                $7::jsonb,
+                $7::uuid,
                 $8::jsonb,
-                $9
+                $9::jsonb,
+                $10
             )
             RETURNING
                 id::text
@@ -692,6 +816,7 @@ export async function productRoutes(
               body.data.sku ?? null,
               body.data.gtin ?? null,
               body.data.description ?? null,
+              baseUom?.id ?? null,
               JSON.stringify(
                 body.data.attributes
               ),
@@ -909,6 +1034,54 @@ export async function productRoutes(
       }
 
 
+      let baseUomId:
+        string | null | undefined =
+          undefined;
+
+
+      if (
+        body.data.baseUomCode
+        !== undefined
+      ) {
+
+        const baseUom =
+          await loadBaseUnit(
+            body.data.baseUomCode
+          );
+
+
+        if (
+          body.data.baseUomCode
+          && (
+            !baseUom
+            || !baseUom.isActive
+          )
+        ) {
+
+          reply.code(404);
+
+          return {
+
+            ok: false,
+
+            error:
+              "base_uom_not_found",
+
+            baseUomCode:
+              body.data.baseUomCode
+
+          };
+
+        }
+
+
+        baseUomId =
+          baseUom?.id
+          ?? null;
+
+      }
+
+
       const updates: string[] = [];
 
       const values: unknown[] = [];
@@ -1003,6 +1176,19 @@ export async function productRoutes(
         addValue(
           "description =",
           body.data.description
+        );
+
+      }
+
+
+      if (
+        baseUomId
+        !== undefined
+      ) {
+
+        addValue(
+          "base_uom_id =",
+          baseUomId
         );
 
       }
