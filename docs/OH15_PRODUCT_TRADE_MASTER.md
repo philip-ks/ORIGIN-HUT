@@ -255,3 +255,30 @@ Frontend build is now part of GitHub Actions.
 
 Incoterms remain outside Product and belong to the later commercial
 offer layer.
+
+
+## OH15.8 — Product Master Provenance Hardening
+
+Migration 022 closes a provenance gap discovered during end-to-end
+review.
+
+Manufacturer Product identity now supports:
+
+- source type
+- canonical source record
+- confidence
+- evidence count through `entity_source_links`
+
+The same migration installs automatic source-link triggers for all
+OH15 records that expose `canonical_source_record_id`:
+
+- manufacturer products
+- product specifications
+- packaging configurations
+- organization sites
+- manufacturer-product site relationships
+- product documents
+- product compliance records
+
+This guarantees that API writes and future direct ingestion paths
+preserve the same canonical provenance chain.

@@ -282,6 +282,178 @@ class ManufacturerProductPostgresIntegrationTest(
             )
 
 
+    def test_source_backed_identity_creates_provenance_link(
+        self,
+    ) -> None:
+
+        with psycopg.connect(
+            os.environ[
+                "DATABASE_URL"
+            ]
+        ) as connection:
+
+            (
+                manufacturer_id,
+                product_id,
+            ) = self._seed(
+                connection,
+                "PROVENANCE",
+            )
+
+            source_id = connection.execute(
+                """
+                INSERT INTO data_sources (
+                    code,
+                    name,
+                    provider,
+                    category,
+                    access_method,
+                    is_official
+                )
+                VALUES (
+                    'oh15_manufacturer_product_test_source',
+                    'OH15 Manufacturer Product Test Source',
+                    'Origin Hut Test',
+                    'product_intelligence',
+                    'test',
+                    TRUE
+                )
+                ON CONFLICT (code)
+                DO UPDATE SET
+                    name = EXCLUDED.name
+                RETURNING id
+                """
+            ).fetchone()[0]
+
+            run_id = connection.execute(
+                """
+                INSERT INTO ingestion_runs (
+                    data_source_id,
+                    status
+                )
+                VALUES (
+                    %s,
+                    'completed'
+                )
+                RETURNING id
+                """,
+                (
+                    source_id,
+                ),
+            ).fetchone()[0]
+
+            source_record_id = connection.execute(
+                """
+                INSERT INTO source_records (
+                    data_source_id,
+                    ingestion_run_id,
+                    external_id,
+                    record_type,
+                    content_hash,
+                    raw_payload
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    'manufacturer_product_identity',
+                    repeat('a', 64),
+                    '{}'::jsonb
+                )
+                RETURNING id
+                """,
+                (
+                    source_id,
+                    run_id,
+                    (
+                        "oh15-manufacturer-product-provenance-"
+                        + manufacturer_id
+                    ),
+                ),
+            ).fetchone()[0]
+
+            manufacturer_product_id = connection.execute(
+                """
+                INSERT INTO manufacturer_products (
+                    product_id,
+                    manufacturer_id,
+                    name,
+                    source_type,
+                    canonical_source_record_id,
+                    confidence
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    'Source-backed grade',
+                    'official_manufacturer',
+                    %s,
+                    0.9900
+                )
+                RETURNING id
+                """,
+                (
+                    product_id,
+                    manufacturer_id,
+                    source_record_id,
+                ),
+            ).fetchone()[0]
+
+            row = connection.execute(
+                """
+                SELECT
+                    source_type,
+                    canonical_source_record_id::text,
+                    confidence::double precision
+                FROM manufacturer_products
+                WHERE id = %s
+                """,
+                (
+                    manufacturer_product_id,
+                ),
+            ).fetchone()
+
+            self.assertEqual(
+                row[0],
+                "official_manufacturer",
+            )
+
+            self.assertEqual(
+                row[1],
+                str(
+                    source_record_id
+                ),
+            )
+
+            self.assertAlmostEqual(
+                row[2],
+                0.99,
+            )
+
+            evidence_count = connection.execute(
+                """
+                SELECT COUNT(*)::int
+                FROM entity_source_links
+                WHERE
+                    source_record_id = %s
+                    AND entity_type =
+                        'manufacturer_product'
+                    AND entity_id = %s
+                    AND relationship_type =
+                        'identity_evidence'
+                """,
+                (
+                    source_record_id,
+                    manufacturer_product_id,
+                ),
+            ).fetchone()[0]
+
+            self.assertEqual(
+                evidence_count,
+                1,
+            )
+
+
     def test_sku_is_unique_within_manufacturer(
         self,
     ) -> None:

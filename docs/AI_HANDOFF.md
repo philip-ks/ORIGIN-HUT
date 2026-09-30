@@ -364,3 +364,12 @@ Workbench tabs:
 
 All operational values come from Origin Hut APIs. Frontend build is
 now included in CI.
+
+
+## OH15.8 — Product Master Provenance Hardening
+
+Migration 022 adds source-backed provenance to Manufacturer Product
+identity and automatic `entity_source_links` for all OH15 entities
+that carry `canonical_source_record_id`.
+
+OH15 schema head is now `022`.

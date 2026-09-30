@@ -184,6 +184,25 @@ const createSchema =
       jsonObjectSchema
         .default({}),
 
+    sourceType: z
+      .string()
+      .trim()
+      .min(1)
+      .max(100)
+      .default("manual"),
+
+    sourceRecordId:
+      uuidSchema
+        .nullable()
+        .optional(),
+
+    confidence: z
+      .number()
+      .min(0)
+      .max(1)
+      .nullable()
+      .optional(),
+
     metadata:
       jsonObjectSchema
         .default({})
@@ -269,6 +288,25 @@ const updateSchema =
     attributes:
       jsonObjectSchema
         .optional(),
+
+    sourceType: z
+      .string()
+      .trim()
+      .min(1)
+      .max(100)
+      .optional(),
+
+    sourceRecordId:
+      uuidSchema
+        .nullable()
+        .optional(),
+
+    confidence: z
+      .number()
+      .min(0)
+      .max(1)
+      .nullable()
+      .optional(),
 
     metadata:
       jsonObjectSchema
@@ -475,6 +513,26 @@ async function loadManufacturerProduct(
         mp.status,
         mp.identifiers,
         mp.attributes,
+
+        mp.source_type
+          AS "sourceType",
+
+        mp.canonical_source_record_id::text
+          AS "canonicalSourceRecordId",
+
+        mp.confidence::double precision
+          AS confidence,
+
+        (
+          SELECT COUNT(*)::int
+          FROM entity_source_links esl
+          WHERE
+            esl.entity_type =
+              'manufacturer_product'
+            AND esl.entity_id =
+              mp.id
+        ) AS "evidenceCount",
+
         mp.metadata,
 
         mp.created_at
@@ -634,6 +692,26 @@ export async function manufacturerProductRoutes(
             mp.status,
             mp.identifiers,
             mp.attributes,
+
+            mp.source_type
+              AS "sourceType",
+
+            mp.canonical_source_record_id::text
+              AS "canonicalSourceRecordId",
+
+            mp.confidence::double precision
+              AS confidence,
+
+            (
+              SELECT COUNT(*)::int
+              FROM entity_source_links esl
+              WHERE
+                esl.entity_type =
+                  'manufacturer_product'
+                AND esl.entity_id =
+                  mp.id
+            ) AS "evidenceCount",
+
             mp.metadata,
 
             mp.created_at
@@ -920,6 +998,26 @@ export async function manufacturerProductRoutes(
             mp.status,
             mp.identifiers,
             mp.attributes,
+
+            mp.source_type
+              AS "sourceType",
+
+            mp.canonical_source_record_id::text
+              AS "canonicalSourceRecordId",
+
+            mp.confidence::double precision
+              AS confidence,
+
+            (
+              SELECT COUNT(*)::int
+              FROM entity_source_links esl
+              WHERE
+                esl.entity_type =
+                  'manufacturer_product'
+                AND esl.entity_id =
+                  mp.id
+            ) AS "evidenceCount",
+
             mp.metadata,
 
             mp.created_at
@@ -1196,6 +1294,9 @@ export async function manufacturerProductRoutes(
                 status,
                 identifiers,
                 attributes,
+                source_type,
+                canonical_source_record_id,
+                confidence,
                 metadata
             )
             VALUES (
@@ -1212,7 +1313,10 @@ export async function manufacturerProductRoutes(
                 $11,
                 $12::jsonb,
                 $13::jsonb,
-                $14::jsonb
+                $14,
+                $15::uuid,
+                $16,
+                $17::jsonb
             )
             RETURNING
                 id::text
@@ -1235,6 +1339,9 @@ export async function manufacturerProductRoutes(
               JSON.stringify(
                 body.data.attributes
               ),
+              body.data.sourceType,
+              body.data.sourceRecordId ?? null,
+              body.data.confidence ?? null,
               JSON.stringify(
                 body.data.metadata
               )
@@ -1606,6 +1713,36 @@ export async function manufacturerProductRoutes(
         addValue(
           "status",
           body.data.status
+        );
+      }
+
+      if (
+        body.data.sourceType
+        !== undefined
+      ) {
+        addValue(
+          "source_type",
+          body.data.sourceType
+        );
+      }
+
+      if (
+        body.data.sourceRecordId
+        !== undefined
+      ) {
+        addValue(
+          "canonical_source_record_id",
+          body.data.sourceRecordId
+        );
+      }
+
+      if (
+        body.data.confidence
+        !== undefined
+      ) {
+        addValue(
+          "confidence",
+          body.data.confidence
         );
       }
 
