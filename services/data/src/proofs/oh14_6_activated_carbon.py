@@ -168,12 +168,52 @@ def recreate_database(production_url: str, test_url: str) -> None:
 def drop_database(production_url: str) -> None:
     admin_url = database_url_with_name(production_url, "postgres")
 
-    with psycopg.connect(admin_url, autocommit=True) as connection:
-        connection.execute(
-            sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(
-                sql.Identifier(TEST_DATABASE_NAME)
-            )
-        )
+    last_error: Exception | None = None
+
+    for attempt in range(1, 4):
+
+        try:
+
+            with psycopg.connect(
+                admin_url,
+                autocommit=True,
+            ) as connection:
+
+                connection.execute(
+                    """
+                    SELECT pg_terminate_backend(pid)
+                    FROM pg_stat_activity
+                    WHERE
+                        datname = %s
+                        AND pid <> pg_backend_pid()
+                    """,
+                    (
+                        TEST_DATABASE_NAME,
+                    ),
+                )
+
+                connection.execute(
+                    sql.SQL(
+                        "DROP DATABASE IF EXISTS {} WITH (FORCE)"
+                    ).format(
+                        sql.Identifier(
+                            TEST_DATABASE_NAME
+                        )
+                    )
+                )
+
+            return
+
+        except Exception as error:
+            last_error = error
+
+            if attempt < 3:
+                time.sleep(
+                    float(attempt)
+                )
+
+    assert last_error is not None
+    raise last_error
 
 
 def apply_migrations(test_url: str) -> None:
@@ -654,7 +694,7 @@ def main() -> int:
                     f"/api/organizations/{organization['id']}/intelligence",
                 )
 
-                if detail["summary"]["evidenceCount"] < 1:
+                if detail["intelligence"]["evidenceCount"] < 1:
                     stop("Organization evidence coverage is missing.")
 
             print(
