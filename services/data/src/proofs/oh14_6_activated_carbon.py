@@ -71,13 +71,37 @@ def safe_command_text(arguments: list[str]) -> str:
     )
 
 
+def resolve_executable(command: str) -> str:
+    candidate = Path(command)
+
+    if candidate.is_file():
+        return str(candidate)
+
+    resolved = shutil.which(command)
+
+    if resolved is None and os.name == "nt":
+        resolved = shutil.which(command + ".cmd")
+
+    if resolved is None:
+        stop("Required executable was not found on PATH: " + command)
+
+    return resolved
+
+
 def run_command(
     arguments: list[str],
     *,
     env: dict[str, str] | None = None,
 ) -> str:
+    resolved_arguments = [
+        resolve_executable(
+            arguments[0]
+        ),
+        *arguments[1:],
+    ]
+
     result = subprocess.run(
-        arguments,
+        resolved_arguments,
         cwd=PROJECT_ROOT,
         env=env,
         text=True,
@@ -408,7 +432,10 @@ def main() -> int:
             api_stderr_handle = api_stderr_path.open("w", encoding="utf-8")
 
             api_process = subprocess.Popen(
-                ["node", "apps/api/dist/server.js"],
+                [
+                    resolve_executable("node"),
+                    "apps/api/dist/server.js",
+                ],
                 cwd=PROJECT_ROOT,
                 env=runtime_env,
                 stdout=api_stdout_handle,
