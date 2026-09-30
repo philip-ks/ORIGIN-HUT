@@ -142,8 +142,35 @@ Specification values retain:
 
 ### OH15.4 — Packaging
 
-Package hierarchy, quantity, weights, dimensions and logistics-ready
-packaging configuration.
+Implemented by migration 019.
+
+Package type names use UN/CEFACT Recommendation 21 and remain
+separate from physical units in Recommendation 20.
+
+A manufacturer Product can now carry packaging configurations such
+as:
+
+```text
+25 KGM woven-plastic bag
+    ->
+40 bags per pallet
+```
+
+Packaging records support:
+
+- primary / secondary / tertiary / logistics level
+- package type
+- package material
+- product content quantity + UOM
+- nested inner package + count
+- net and gross weight
+- length / width / height
+- default package
+- validity
+- source / confidence / provenance metadata
+
+Shipping containers are deliberately not modelled as packaging.
+Container loading belongs to the later logistics/load-plan layer.
 
 ### OH15.5 — Manufacturing / Origin
 

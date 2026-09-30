@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `43230651da045a7d5759170d74d28812208e5ade` — `Use unique OH14.6 disposable databases`  
 **Base branch:** `main`  
 **Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
-**Schema head:** `018`
+**Schema head:** `019`
 
 ## Verified state
 
@@ -264,3 +264,27 @@ record, confidence, validity dates and metadata.
 Only one active, open-ended value for the same definition is allowed
 per subject. Historical values remain possible by closing or
 deactivating the previous value.
+
+
+## OH15.4 — Product Packaging
+
+Migration 019 introduces:
+
+- package_types using UN/CEFACT Recommendation 21 codes
+- packaging_configurations for manufacturer Products
+
+Packaging supports:
+
+- primary / secondary / tertiary / logistics levels
+- product content quantity + physical UOM
+- nested packaging counts
+- net / gross weight
+- package dimensions
+- default package designation
+- source record / confidence / validity / metadata
+
+The inner package in a packaging hierarchy must belong to the same
+manufacturer Product.
+
+Shipping containers remain outside packaging and will belong to a
+later logistics/load-plan layer.
