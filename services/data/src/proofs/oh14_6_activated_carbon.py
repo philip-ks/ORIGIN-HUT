@@ -30,7 +30,12 @@ if str(SRC_ROOT) not in sys.path:
 from connectors.company_web import execute_source, load_config
 
 
-TEST_DATABASE_NAME = "originhut_oh14_6_product_test"
+TEST_DATABASE_NAME = (
+    "originhut_oh14_6_product_test_"
+    + datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    + "_"
+    + str(os.getpid())
+)
 API_PORT = 4147
 API_BASE = f"http://127.0.0.1:{API_PORT}"
 HS_CODE = "380210"
@@ -148,11 +153,6 @@ def recreate_database(production_url: str, test_url: str) -> None:
     admin_url = database_url_with_name(production_url, "postgres")
 
     with psycopg.connect(admin_url, autocommit=True) as connection:
-        connection.execute(
-            sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(
-                sql.Identifier(TEST_DATABASE_NAME)
-            )
-        )
         connection.execute(
             sql.SQL("CREATE DATABASE {}").format(
                 sql.Identifier(TEST_DATABASE_NAME)
@@ -430,6 +430,7 @@ def main() -> int:
 
     production_before = baseline(production_url)
     print("Production baseline:", production_before)
+    print("Disposable database:", TEST_DATABASE_NAME)
 
     branch = run_command(["git", "branch", "--show-current"]).strip()
     if branch != "work/oh14":
