@@ -230,7 +230,28 @@ compliance record.
 
 ### OH15.7 — Product Workbench
 
-Backend-driven tabbed Product UI.
+Implemented as the first real Origin Hut frontend workflow.
+
+The stock Next.js starter is replaced with:
+
+- API-backed Product directory
+- Product Workbench route at `/products/:id`
+- horizontal/sticky tabs rather than long vertical module stacking
+- Overview
+- Classification
+- Specifications
+- Manufacturer Products
+- Packaging
+- Sites
+- Documents
+- Compliance
+- Counterparties
+
+Operational values are fetched from Origin Hut APIs using
+`NEXT_PUBLIC_API_BASE_URL`. The UI contains no mock Product,
+company, market or compliance records.
+
+Frontend build is now part of GitHub Actions.
 
 Incoterms remain outside Product and belong to the later commercial
 offer layer.

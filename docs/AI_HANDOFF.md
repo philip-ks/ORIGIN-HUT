@@ -338,3 +338,29 @@ source record and confidence.
 A compliance evidence document must belong to the same Product
 subject as the compliance record. API-created source-backed records
 also create entity_source_links for provenance.
+
+
+## OH15.7 — Product Workbench
+
+The stock Next.js starter has been replaced by the first real Origin
+Hut frontend workflow.
+
+Routes:
+
+- `/` — API-backed Product directory
+- `/products/:id` — Product Workbench
+
+Workbench tabs:
+
+- Overview
+- Classification
+- Specifications
+- Manufacturer Products
+- Packaging
+- Sites
+- Documents
+- Compliance
+- Counterparties
+
+All operational values come from Origin Hut APIs. Frontend build is
+now included in CI.
