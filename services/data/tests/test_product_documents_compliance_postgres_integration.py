@@ -120,11 +120,12 @@ class ProductDocumentsCompliancePostgresIntegrationTest(
             self.database_url
         ) as connection:
 
-            product_id =
+            product_id = (
                 self._product(
                     connection,
                     "A",
                 )
+            )
 
             document_type = connection.execute(
                 """
@@ -197,17 +198,19 @@ class ProductDocumentsCompliancePostgresIntegrationTest(
             self.database_url
         ) as connection:
 
-            product_a =
+            product_a = (
                 self._product(
                     connection,
                     "B1",
                 )
+            )
 
-            product_b =
+            product_b = (
                 self._product(
                     connection,
                     "B2",
                 )
+            )
 
             document_type = connection.execute(
                 """
@@ -288,11 +291,12 @@ class ProductDocumentsCompliancePostgresIntegrationTest(
             self.database_url
         ) as connection:
 
-            product_id =
+            product_id = (
                 self._product(
                     connection,
                     "C",
                 )
+            )
 
             document_type = connection.execute(
                 """
