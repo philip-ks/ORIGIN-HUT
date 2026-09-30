@@ -1,9 +1,9 @@
 # Origin Hut — AI Development Handoff
 
-**Snapshot:** 2026-09-29  
-**Current milestone:** OH14 — Counterparty Intelligence  
+**Snapshot:** 2026-09-30  
+**Current milestone:** OH14 — Counterparty Intelligence — COMPLETE / VERIFIED  
 **Development branch:** `work/oh14`  
-**Verified implementation HEAD:** `1de53b53c53b49b30ddd35cf9a114281116fb952` — `Add organization alias identity resolution`  
+**Verified implementation HEAD:** `43230651da045a7d5759170d74d28812208e5ade` — `Use unique OH14.6 disposable databases`  
 **Base branch:** `main`  
 **Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
 **Schema head:** `015`
@@ -137,11 +137,57 @@ Verification:
 - migration head remained 015
 - OH13 production remained unchanged at `11|123982|3`
 
-## Current next increment
+## OH14.6 — Product-first end-to-end proof — COMPLETE
 
-### OH14.6 — Activated-carbon India/UAE end-to-end counterparty proof
+Activated Carbon / HS2022 `380210` / India -> UAE is now the first
+fully verified Product-first counterparty vertical.
 
-Use HS2022 `380210` as the first complete source-backed counterparty vertical.
+Verified local proof on 2026-09-30 established:
+
+- canonical Activated Carbon Product created through the API
+- explicit Product -> HS2022 `380210` confirmation
+- migrations 001-015 applied cleanly
+- API typecheck and build passed
+- disposable API became healthy
+- UN Comtrade India -> UAE 2024 export fact canonicalized
+- market-intelligence API returned the UAE market
+- Jacobi official web evidence created a Product + HS scoped manufacturing activity
+- Saiph official web evidence created a Product + HS scoped supply activity
+- product-filtered counterparty discovery returned the expected organizations
+- organization evidence/provenance inspection passed
+- migration head remained 015
+- production database remained unchanged at `11|123982|3`
+
+The proof runner uses a unique disposable database per run. On the
+verified Windows/PostgreSQL runtime, final disposal emitted a
+`checkpoint request failed` warning after the proof had already
+passed. This is an environment cleanup issue and does not change the
+verified production-invariance result.
+
+GitHub Actions run #38 for commit `4323065` passed both:
+
+- Node / API
+- Python / Data
+
+## Next milestone
+
+### OH15 — Product Trade Master
+
+Strengthen Product as the center of Origin Hut before building
+commercial offers and Incoterms.
+
+Initial scope:
+
+- canonical Product trade profile
+- structured specifications
+- units of measure
+- packaging / weights / dimensions
+- origin and manufacturer context
+- compliance / document references
+- clear separation between generic Product and manufacturer SKU/variant
+- product-level provenance
+
+Incoterms belong to the later commercial-offer layer, not to the Product itself.
 
 ## Workflow
 

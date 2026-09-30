@@ -703,3 +703,32 @@ Products and relationships remain separate existing sub-resources.
 The evidence list does not return the full raw source payload. It
 returns inspectable source-record metadata and data-source provenance;
 raw source payload remains in the provenance/storage layer.
+
+
+## OH14.6 Verified Closeout
+
+Verified on 2026-09-30 using the repository-tracked Product-first proof.
+
+Result:
+
+```text
+OH14.6 PRODUCT-FIRST ACTIVATED CARBON PROOF PASSED
+PRODUCT API PASS
+PRODUCT -> HS2022 380210 PASS
+INDIA -> UAE MARKET INTELLIGENCE PASS
+JACOBI PRODUCT-SCOPED MANUFACTURING EVIDENCE PASS
+SAIPH PRODUCT-SCOPED UAE SUPPLY EVIDENCE PASS
+PRODUCT-FILTERED COUNTERPARTIES PASS
+ORGANIZATION PROVENANCE PASS
+MIGRATION HEAD REMAINS 015
+PRODUCTION DATABASE UNCHANGED
+```
+
+The Product-first correction is now canonical for Origin Hut.
+Company-web activities can preserve both Product and HS scope and
+must not silently fall back to HS-only scope when a Product is
+explicitly supplied.
+
+OH14 is complete.
+
+The next milestone is OH15 — Product Trade Master.

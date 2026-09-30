@@ -158,7 +158,7 @@ Important invariants include immutable source revisions, idempotent canonicaliza
 
 ## Current milestone
 
-OH14 — Counterparty Intelligence.
+OH14 — Counterparty Intelligence — complete and verified.
 
 Completed:
 
@@ -166,11 +166,26 @@ Completed:
 - OH14.2 counterparty API
 - OH14.3 company-web connector
 - OH14.4 alias / identity resolution
+- OH14.5 organization activity/evidence/detail endpoints
+- OH14.6 Product-first Activated Carbon / HS380210 / India-UAE proof
 
-Next:
+OH14.6 established the Product-first chain:
 
-- OH14.5 organization activity/evidence/detail endpoints — complete and verified
-- OH14.6 activated-carbon India/UAE end-to-end proof — next
+```text
+Product
+  -> accepted HS classification
+  -> market evidence
+  -> official company evidence
+  -> product-scoped organization activity
+  -> product-filtered counterparty discovery
+  -> provenance
+```
+
+The next milestone is OH15 — Product Trade Master.
+
+OH15 should strengthen the canonical Product before Origin Hut moves
+into commercial offers, Incoterms, costing, RFQ, quotation and
+shipment execution.
 
 ## Historical UI note
 

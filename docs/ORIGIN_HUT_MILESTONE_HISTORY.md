@@ -19,6 +19,7 @@
 | OH14.3 | `ca3b0df` | Reusable company-web intelligence connector |
 | OH14.4 | `1de53b5` | Organization aliases + conservative identity resolution |
 | OH14.5 | `7e89044` | Organization intelligence detail/evidence APIs |
+| OH14.6 | `0afc1ca` -> `4323065` | Product-first Activated Carbon / HS380210 / India-UAE proof |
 
 ## Persistent decisions by milestone
 
@@ -110,9 +111,41 @@ Final proof:
 - OH13 production database remained unchanged
 - GitHub Actions run #29 passed
 
+### OH14.6
+
+Product-first correction and end-to-end proof.
+
+Key commits:
+
+- `0afc1ca` product-scoped company intelligence
+- `1be3adf` HS-only backward compatibility
+- `5bc9eb0` environment-only API configuration
+- `7aa0326` environment typing fix
+- `4181ff1` Product-first live proof runner
+- `7356ec2` Windows executable resolution
+- `a29dff5` organization intelligence proof assertion fix
+- `4323065` unique disposable database per run
+
+Verified proof:
+
+- Product API passed
+- Product -> HS2022 380210 passed
+- India -> UAE market intelligence passed
+- Jacobi Product-scoped manufacturing evidence passed
+- Saiph Product-scoped UAE supply evidence passed
+- Product-filtered counterparty discovery passed
+- organization provenance passed
+- migration head remained 015
+- production DB remained `11|123982|3`
+- GitHub Actions run #38 passed Node/API and Python/Data
+
 ## Next
 
-OH14.6: activated-carbon India/UAE end-to-end counterparty proof around HS2022 `380210`.
+OH15: Product Trade Master.
+
+Product stays at the center. Incoterms are deferred to the
+commercial-offer layer because an Incoterm is transaction/offer
+context, not a static Product attribute.
 
 ## Legacy / pre-rebuild history
 
