@@ -206,8 +206,27 @@ brand owner.
 
 ### OH15.6 — Documents / Compliance / Provenance
 
-Product documents, certificates, technical evidence and source
-lineage.
+Implemented by migration 021.
+
+Product documents now support common trade/product evidence including:
+
+- SDS
+- TDS
+- COA
+- Certificate of Origin
+- test reports
+- certificates
+- regulatory registrations
+
+Each document belongs to either the generic Product or a manufacturer
+Product, with issuer, issue/expiry dates, verification state,
+document reference/file metadata, SHA-256, source record, confidence
+and provenance metadata.
+
+Compliance frameworks and Product compliance records are modelled
+separately from the documents that may prove them. A compliance
+evidence document must belong to the same Product subject as the
+compliance record.
 
 ### OH15.7 — Product Workbench
 

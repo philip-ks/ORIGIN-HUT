@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `43230651da045a7d5759170d74d28812208e5ade` — `Use unique OH14.6 disposable databases`  
 **Base branch:** `main`  
 **Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
-**Schema head:** `020`
+**Schema head:** `021`
 
 ## Verified state
 
@@ -313,3 +313,28 @@ Manufacturer Products can link to sites as:
 The model intentionally permits contract manufacturing: a Product's
 manufacturer organization and the organization operating a
 manufacturing site do not have to be the same legal entity.
+
+
+## OH15.6 — Documents / Compliance / Provenance
+
+Migration 021 introduces:
+
+- product_document_types
+- product_documents
+- compliance_frameworks
+- product_compliance_records
+
+Documents and compliance records belong to exactly one Product
+subject: generic Product OR manufacturer Product.
+
+Documents support issuer, document number, issue/expiry dates,
+verification status, file/reference metadata, SHA-256, canonical
+source record, confidence and metadata.
+
+Compliance records support jurisdiction/framework, requirement code,
+registration number, status, validity, evidence document, canonical
+source record and confidence.
+
+A compliance evidence document must belong to the same Product
+subject as the compliance record. API-created source-backed records
+also create entity_source_links for provenance.

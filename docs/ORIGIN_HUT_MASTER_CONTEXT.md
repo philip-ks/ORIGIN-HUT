@@ -4,7 +4,7 @@
 **Repository:** `philip-ks/ORIGIN-HUT`  
 **Current development branch:** `work/oh15`  
 **Verified OH14.4 implementation commit:** `1de53b5`  
-**Schema head:** `020`
+**Schema head:** `021`
 
 ## Purpose
 
@@ -40,7 +40,7 @@ Python data layer for external connectors, canonicalization, provenance, Postgre
 
 ### `database/migrations`
 
-PostgreSQL/PostGIS canonical schema. Current schema head: migration 020.
+PostgreSQL/PostGIS canonical schema. Current schema head: migration 021.
 
 ### `storage`
 

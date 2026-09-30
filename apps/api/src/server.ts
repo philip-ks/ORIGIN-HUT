@@ -33,6 +33,10 @@ import {
 } from "./routes/sites.js";
 
 import {
+  documentComplianceRoutes
+} from "./routes/documents-compliance.js";
+
+import {
   classificationRoutes
 } from "./routes/classification.js";
 
@@ -101,6 +105,10 @@ await app.register(
 
 await app.register(
   siteRoutes
+);
+
+await app.register(
+  documentComplianceRoutes
 );
 
 await app.register(
