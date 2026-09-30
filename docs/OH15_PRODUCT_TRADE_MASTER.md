@@ -174,7 +174,35 @@ Container loading belongs to the later logistics/load-plan layer.
 
 ### OH15.5 — Manufacturing / Origin
 
-Manufacturing facilities and explicit origin relationships.
+Implemented by migration 020.
+
+Origin Hut now separates:
+
+```text
+organization country
+        !=
+manufacturing-site country
+        !=
+country of origin
+```
+
+Organization sites are reusable operational locations with explicit
+site type, country, optional UN/LOCODE, address and geography.
+
+Manufacturer Products link to sites through evidenced relationships:
+
+- manufactured_at
+- packaged_at
+- stored_at
+- distributed_from
+
+Country of origin remains an explicit Manufacturer Product field and
+is not silently derived from an organization's headquarters or a
+site location.
+
+The model also permits contract manufacturing where the site operator
+is a different legal organization from the Product's manufacturer /
+brand owner.
 
 ### OH15.6 — Documents / Compliance / Provenance
 

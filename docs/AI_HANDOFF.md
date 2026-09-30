@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `43230651da045a7d5759170d74d28812208e5ade` — `Use unique OH14.6 disposable databases`  
 **Base branch:** `main`  
 **Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
-**Schema head:** `019`
+**Schema head:** `020`
 
 ## Verified state
 
@@ -288,3 +288,28 @@ manufacturer Product.
 
 Shipping containers remain outside packaging and will belong to a
 later logistics/load-plan layer.
+
+
+## OH15.5 — Manufacturing / Origin
+
+Migration 020 introduces:
+
+- organization_sites
+- manufacturer_product_sites
+
+The canonical model keeps organization country, site country and
+manufacturer-product country of origin as separate facts.
+
+Sites support manufacturing, packaging, warehouse,
+distribution-center, office, laboratory and other roles.
+
+Manufacturer Products can link to sites as:
+
+- manufactured_at
+- packaged_at
+- stored_at
+- distributed_from
+
+The model intentionally permits contract manufacturing: a Product's
+manufacturer organization and the organization operating a
+manufacturing site do not have to be the same legal entity.

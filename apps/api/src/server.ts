@@ -29,6 +29,10 @@ import {
 } from "./routes/packaging.js";
 
 import {
+  siteRoutes
+} from "./routes/sites.js";
+
+import {
   classificationRoutes
 } from "./routes/classification.js";
 
@@ -93,6 +97,10 @@ await app.register(
 
 await app.register(
   packagingRoutes
+);
+
+await app.register(
+  siteRoutes
 );
 
 await app.register(
