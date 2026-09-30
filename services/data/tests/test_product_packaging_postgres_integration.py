@@ -180,11 +180,12 @@ class ProductPackagingPostgresIntegrationTest(
             self.database_url
         ) as connection:
 
-            manufacturer_product_id =
+            manufacturer_product_id = (
                 self._manufacturer_product(
                     connection,
                     "A",
                 )
+            )
 
             bag_type = connection.execute(
                 """
@@ -296,17 +297,19 @@ class ProductPackagingPostgresIntegrationTest(
             self.database_url
         ) as connection:
 
-            product_a =
+            product_a = (
                 self._manufacturer_product(
                     connection,
                     "B1",
                 )
+            )
 
-            product_b =
+            product_b = (
                 self._manufacturer_product(
                     connection,
                     "B2",
                 )
+            )
 
             bag_type = connection.execute(
                 """
@@ -400,11 +403,12 @@ class ProductPackagingPostgresIntegrationTest(
             self.database_url
         ) as connection:
 
-            manufacturer_product_id =
+            manufacturer_product_id = (
                 self._manufacturer_product(
                     connection,
                     "C",
                 )
+            )
 
             bag_type = connection.execute(
                 """
