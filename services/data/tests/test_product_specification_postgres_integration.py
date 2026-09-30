@@ -228,8 +228,6 @@ class ProductSpecificationPostgresIntegrationTest(
                         ),
                     )
 
-            connection.rollback()
-
             valid = connection.execute(
                 """
                 INSERT INTO product_specifications (
