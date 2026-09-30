@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `43230651da045a7d5759170d74d28812208e5ade` — `Use unique OH14.6 disposable databases`  
 **Base branch:** `main`  
 **Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
-**Schema head:** `017`
+**Schema head:** `018`
 
 ## Verified state
 
@@ -242,3 +242,25 @@ physical relationship.
 Packaging codes are deliberately deferred to the packaging milestone
 and should use UN/CEFACT Recommendation 21 rather than being mixed
 into physical UOM.
+
+
+## OH15.3 — Structured Specifications
+
+Migration 018 introduces:
+
+- specification_definitions
+- product_specifications
+
+A specification is typed as numeric, text or boolean and belongs to
+exactly one subject:
+
+- generic Product
+- manufacturer Product
+
+Numeric definitions may carry a measurement dimension and canonical
+UOM. Specification values may retain source type, canonical source
+record, confidence, validity dates and metadata.
+
+Only one active, open-ended value for the same definition is allowed
+per subject. Historical values remain possible by closing or
+deactivating the previous value.

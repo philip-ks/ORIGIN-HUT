@@ -21,6 +21,10 @@ import {
 } from "./routes/units.js";
 
 import {
+  specificationRoutes
+} from "./routes/specifications.js";
+
+import {
   classificationRoutes
 } from "./routes/classification.js";
 
@@ -77,6 +81,10 @@ await app.register(
 
 await app.register(
   unitRoutes
+);
+
+await app.register(
+  specificationRoutes
 );
 
 await app.register(

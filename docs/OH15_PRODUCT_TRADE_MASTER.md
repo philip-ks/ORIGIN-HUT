@@ -114,7 +114,31 @@ Recommendation 21.
 
 ### OH15.3 — Structured Specifications
 
-Typed product specification definitions and values with evidence.
+Implemented by migration 018.
+
+The specification engine is generic rather than
+activated-carbon-specific.
+
+Definitions are typed as:
+
+- numeric
+- text
+- boolean
+
+Values may belong either to the generic Product or to one
+manufacturer Product, never both. Numeric definitions can constrain
+the expected measurement dimension and default UOM.
+
+Specification values retain:
+
+- qualifier (exact / nominal / minimum / maximum / range)
+- numeric, range, text or boolean value
+- UOM
+- validity dates
+- source type
+- canonical source record
+- confidence
+- metadata / provenance context
 
 ### OH15.4 — Packaging
 
