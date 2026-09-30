@@ -37,6 +37,10 @@ import {
 } from "./routes/products.js";
 
 import {
+  manufacturerProductRoutes
+} from "./routes/manufacturer-products.js";
+
+import {
   tradeFlowRoutes
 } from "./routes/trade-flows.js";
 
@@ -85,6 +89,10 @@ await app.register(
 
 await app.register(
   productRoutes
+);
+
+await app.register(
+  manufacturerProductRoutes
 );
 
 await app.register(

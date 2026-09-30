@@ -1,12 +1,12 @@
 # Origin Hut — AI Development Handoff
 
 **Snapshot:** 2026-09-30  
-**Current milestone:** OH14 — Counterparty Intelligence — COMPLETE / VERIFIED  
-**Development branch:** `work/oh14`  
+**Current milestone:** OH15 — Product Trade Master — IN PROGRESS  
+**Development branch:** `work/oh15`  
 **Verified implementation HEAD:** `43230651da045a7d5759170d74d28812208e5ade` — `Use unique OH14.6 disposable databases`  
 **Base branch:** `main`  
 **Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
-**Schema head:** `015`
+**Schema head:** `016`
 
 ## Verified state
 
@@ -209,3 +209,15 @@ Future AI sessions should read, in order:
 3. `docs/ORIGIN_HUT_MILESTONE_HISTORY.md`
 4. current milestone document
 5. active branch / HEAD / CI state
+
+
+## OH15 start
+
+OH14 was fast-forwarded into `main` at
+`52fc069226ec1e301287a070e24b47e3a8672cf7`.
+
+`work/oh15` was created from that verified release.
+
+OH15.1 begins with Manufacturer Product Identity. Generic
+`products` remain the stable trade concept. Manufacturer-specific
+grade/SKU/GTIN/origin belongs in `manufacturer_products`.

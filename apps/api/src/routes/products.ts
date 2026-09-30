@@ -325,7 +325,13 @@ async function loadProduct(
           SELECT COUNT(*)::int
           FROM hs_classification_requests hcr
           WHERE hcr.product_id = p.id
-        ) AS "classificationRequestCount"
+        ) AS "classificationRequestCount",
+
+        (
+          SELECT COUNT(*)::int
+          FROM manufacturer_products mp
+          WHERE mp.product_id = p.id
+        ) AS "manufacturerProductCount"
 
       FROM products p
 

@@ -2,9 +2,9 @@
 
 **Continuity snapshot:** 2026-09-29  
 **Repository:** `philip-ks/ORIGIN-HUT`  
-**Current development branch:** `work/oh14`  
+**Current development branch:** `work/oh15`  
 **Verified OH14.4 implementation commit:** `1de53b5`  
-**Schema head:** `015`
+**Schema head:** `016`
 
 ## Purpose
 
@@ -40,7 +40,7 @@ Python data layer for external connectors, canonicalization, provenance, Postgre
 
 ### `database/migrations`
 
-PostgreSQL/PostGIS canonical schema. Current schema head: migration 015.
+PostgreSQL/PostGIS canonical schema. Current schema head: migration 016.
 
 ### `storage`
 
@@ -181,11 +181,20 @@ Product
   -> provenance
 ```
 
-The next milestone is OH15 — Product Trade Master.
+OH15 — Product Trade Master — in progress.
 
-OH15 should strengthen the canonical Product before Origin Hut moves
-into commercial offers, Incoterms, costing, RFQ, quotation and
-shipment execution.
+OH15.1 establishes a strict separation between the generic trade
+Product and a manufacturer's concrete catalogue item/grade/SKU.
+
+```text
+Product
+  -> Manufacturer Product
+  -> Packaging
+  -> Commercial Offer
+```
+
+Only the first two layers belong to OH15.1. Incoterms remain outside
+Product and will belong to the later commercial-offer layer.
 
 ## Historical UI note
 

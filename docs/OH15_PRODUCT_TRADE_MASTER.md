@@ -1,0 +1,124 @@
+# OH15 — Product Trade Master
+
+**Branch:** `work/oh15`  
+**Status:** in progress  
+**Starting schema head:** `015`
+
+## Purpose
+
+OH15 makes Product a first-class trade object before Origin Hut
+implements commercial offers, Incoterms, landed cost, RFQ,
+quotation, order or shipment execution.
+
+The central rule is:
+
+> A generic trade Product is not the same thing as a manufacturer's
+> concrete catalogue item, grade, model or SKU.
+
+## Canonical hierarchy
+
+```text
+Product
+"Activated Carbon"
+    |
+    +-- accepted HS classification
+    +-- market intelligence
+    +-- generic specifications
+    |
+    v
+Manufacturer Product
+"Manufacturer X / Grade AC-1000"
+    |
+    +-- manufacturer
+    +-- brand
+    +-- grade / model
+    +-- SKU
+    +-- GTIN
+    +-- country of origin
+    +-- manufacturer-specific specifications
+    |
+    v
+Packaging / Commercial Offer / Transaction
+```
+
+## OH15.1 — Manufacturer Product Identity
+
+Migration 016 introduces `manufacturer_products`.
+
+`products` remains the canonical generic trade concept so all
+existing Product IDs, HS classifications, organization activities,
+trade intelligence and provenance remain valid.
+
+The OH8-era fields on `products`:
+
+- `manufacturer_id`
+- `brand`
+- `sku`
+- `gtin`
+
+remain for backward compatibility only. New manufacturer-specific
+identity belongs in `manufacturer_products`.
+
+### Manufacturer product fields
+
+- generic Product
+- manufacturer organization
+- explicit country of origin
+- name
+- brand
+- grade
+- model code
+- SKU
+- GTIN
+- description
+- status
+- identifiers
+- attributes
+- metadata
+
+Country of origin is explicit and must never be inferred from the
+manufacturer organization's country.
+
+## API
+
+OH15.1 adds:
+
+- `GET /api/manufacturer-products`
+- `GET /api/manufacturer-products/:id`
+- `PATCH /api/manufacturer-products/:id`
+- `GET /api/products/:id/manufacturer-products`
+- `POST /api/products/:id/manufacturer-products`
+
+The API requires the selected manufacturer organization to carry the
+`manufacturer` role.
+
+## Next increments
+
+### OH15.2 — Units of Measure
+
+Canonical UOM/dimension/conversion model.
+
+### OH15.3 — Structured Specifications
+
+Typed product specification definitions and values with evidence.
+
+### OH15.4 — Packaging
+
+Package hierarchy, quantity, weights, dimensions and logistics-ready
+packaging configuration.
+
+### OH15.5 — Manufacturing / Origin
+
+Manufacturing facilities and explicit origin relationships.
+
+### OH15.6 — Documents / Compliance / Provenance
+
+Product documents, certificates, technical evidence and source
+lineage.
+
+### OH15.7 — Product Workbench
+
+Backend-driven tabbed Product UI.
+
+Incoterms remain outside Product and belong to the later commercial
+offer layer.
