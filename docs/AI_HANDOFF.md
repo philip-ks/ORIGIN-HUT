@@ -1,12 +1,12 @@
 # Origin Hut — AI Development Handoff
 
 **Snapshot:** 2026-10-01  
-**Current milestone:** OH15 — Product Trade Master — COMPLETE / VERIFIED  
-**Development branch:** `work/oh15`  
+**Current milestone:** OH16 — Commercial Offers + Incoterms — IN PROGRESS  
+**Development branch:** `work/oh16`  
 **Verified implementation HEAD:** `0457108c454f0d7055cde5686085314b7d0f530c` — `Add OH15 Product Trade Master proof`  
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
-**Schema head:** `022`
+**Schema head:** `023`
 
 ## Verified state
 
@@ -424,3 +424,15 @@ Commercial Offer
 
 Statistical FOB/CIF values in trade_flow remain market statistics and
 must never be treated as transaction Incoterms.
+
+
+## OH16 start
+
+OH15 was fast-forwarded into `main` at
+`cd09fefee4c46a5521044bce331082a2b147094c`.
+
+`work/oh16` was created from that verified release.
+
+OH16.1 begins with a canonical Incoterms reference layer. Commercial
+offers will reference Incoterm rule + edition + named place/port.
+Statistical FOB/CIF values remain separate market-data measures.

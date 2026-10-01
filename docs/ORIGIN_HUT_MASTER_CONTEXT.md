@@ -2,9 +2,9 @@
 
 **Continuity snapshot:** 2026-10-01  
 **Repository:** `philip-ks/ORIGIN-HUT`  
-**Current development branch:** `work/oh15`  
+**Current development branch:** `work/oh16`  
 **Verified OH14.4 implementation commit:** `1de53b5`  
-**Schema head:** `022`
+**Schema head:** `023`
 
 ## Purpose
 
@@ -40,7 +40,7 @@ Python data layer for external connectors, canonicalization, provenance, Postgre
 
 ### `database/migrations`
 
-PostgreSQL/PostGIS canonical schema. Current schema head: migration 022.
+PostgreSQL/PostGIS canonical schema. Current schema head: migration 023.
 
 ### `storage`
 
@@ -160,43 +160,30 @@ Important invariants include immutable source revisions, idempotent canonicaliza
 
 OH15 — Product Trade Master — complete and verified.
 
-Implemented and verified:
+OH16 — Commercial Offers + Incoterms — in progress.
 
-- generic Product vs Manufacturer Product identity separation
-- canonical Product base UOM
-- safe same-dimension UOM conversion
-- structured generic/manufacturer specifications
-- package-type reference and packaging configurations
-- organization sites and manufacturer-product site relationships
-- explicit Product country of origin
-- Product documents
-- compliance frameworks and Product compliance
-- Product-master provenance hardening
-- Product directory and tabbed Product Workbench UI
-- frontend production build in CI
-- end-to-end disposable-database Product Master proof
+OH16 begins by introducing a canonical Incoterms reference layer
+before commercial offers are created.
 
-Final OH15 schema head: migration 022.
-
-OH15 establishes:
+Core commercial boundary:
 
 ```text
 Product
-  -> accepted HS classification
   -> Manufacturer Product
-  -> specifications
-  -> packaging
-  -> manufacturing / origin
-  -> documents / compliance
-  -> provenance
-  -> Product Workbench
+  -> Packaging
+  -> Commercial Offer
+       -> price / currency
+       -> quantity basis / MOQ
+       -> lead time
+       -> payment terms
+       -> Incoterm + edition
+       -> named place / port
+       -> validity
+       -> provenance
 ```
 
-The next milestone is OH16 — Commercial Offers + Incoterms.
-
-Commercial pricing and Incoterms must remain outside static Product
-identity. Statistical FOB/CIF values in trade_flow remain statistical
-measures and are not transaction Incoterms.
+Statistical FOB/CIF values in `trade_flows` remain market
+statistics and are not contractual Incoterms.
 
 ## Historical UI note
 

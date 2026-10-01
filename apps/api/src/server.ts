@@ -21,6 +21,10 @@ import {
 } from "./routes/units.js";
 
 import {
+  incotermRoutes
+} from "./routes/incoterms.js";
+
+import {
   specificationRoutes
 } from "./routes/specifications.js";
 
@@ -93,6 +97,10 @@ await app.register(
 
 await app.register(
   unitRoutes
+);
+
+await app.register(
+  incotermRoutes
 );
 
 await app.register(
