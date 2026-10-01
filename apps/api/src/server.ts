@@ -45,6 +45,10 @@ import {
 } from "./routes/rfq-comparison.js";
 
 import {
+  quotationRoutes
+} from "./routes/quotations.js";
+
+import {
   specificationRoutes
 } from "./routes/specifications.js";
 
@@ -141,6 +145,10 @@ await app.register(
 
 await app.register(
   rfqComparisonRoutes
+);
+
+await app.register(
+  quotationRoutes
 );
 
 await app.register(

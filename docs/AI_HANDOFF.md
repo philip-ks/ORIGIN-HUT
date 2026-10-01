@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `f6a56a4fd95a9d20ea4a19fa7e97a1a0ab249f28` — verified OH17 release
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
-**Schema head:** `029`
+**Schema head:** `030`
 
 ## Verified state
 
@@ -613,3 +613,11 @@ Migration 029 adds a derived RFQ response comparison read model.
 Responses remain visible when comparison inputs are incomplete, but
 Origin Hut marks them non-comparable instead of inventing FX,
 destination costing or quantity assumptions.
+
+
+## OH18.4 — Buyer quotations
+
+Migration 030 introduces buyer-facing Quotations and line pricing.
+Quotation lines can retain source RFQ / Commercial Offer / Landed
+Cost references. Derived markup/margin remains explicit and never
+mutates the supplier offer or internal landed-cost scenario.

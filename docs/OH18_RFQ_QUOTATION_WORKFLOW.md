@@ -343,3 +343,56 @@ The comparison normalizes:
 API:
 
 - `GET /api/rfqs/:id/comparison`
+
+
+## OH18.4 — Buyer quotation model
+
+Migration 030 introduces:
+
+- `quotations`
+- `quotation_lines`
+
+Quotation header preserves:
+
+- issuer organization
+- customer organization
+- optional source RFQ
+- currency
+- issue / validity dates
+- status
+- payment terms
+- Incoterm + named place/location/site
+- provenance
+
+Quotation lines preserve:
+
+- Product / optional Manufacturer Product / packaging
+- optional source RFQ line
+- optional source Commercial Offer
+- optional source Landed Cost Scenario
+- quantity / UOM
+- internal cost basis
+- explicit pricing method
+- explicit pricing rate when derived
+- quoted unit price
+- quoted line total
+- provenance
+
+Supported pricing methods:
+
+- `manual`
+- `markup_percent`
+- `margin_percent`
+
+If a calculated Landed Cost Scenario is linked, its scenario currency
+must match the Quotation currency and its per-UOM cost becomes the
+line's internal cost basis after safe UOM normalization.
+
+Source RFQ, Commercial Offer and Landed Cost objects remain immutable.
+
+API:
+
+- `GET /api/quotations`
+- `POST /api/quotations`
+- `GET /api/quotations/:id`
+- `POST /api/quotations/:id/lines`
