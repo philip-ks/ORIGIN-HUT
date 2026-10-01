@@ -159,3 +159,37 @@ inland-only location or arbitrary location record.
 
 The OH16 test fixture uses the published Cochin/Kochi UN/LOCODE
 `INCOK`.
+
+
+## OH16.4 — End-to-End Commercial Offer Proof
+
+Repository-tracked proof runner:
+
+    infra/windows/Run-OH16-Proof.ps1
+
+The proof uses synthetic commercial terms only. It does not claim a
+real supplier has quoted the demonstrated price, MOQ, lead time or
+payment terms.
+
+The integrated proof chain is:
+
+```text
+Activated Carbon
+  -> HS2022 380210
+  -> Manufacturer Product
+  -> 25 KGM packaging
+  -> seller + buyer
+  -> USD / TNE price basis
+  -> MOQ / lead time / payment terms
+  -> CIF Incoterms 2020
+  -> Jebel Ali / AEJEA
+  -> offer provenance
+  -> Product Workbench build
+```
+
+Negative proof checks also reject:
+
+- maritime Incoterms without a canonical port
+- price UOMs from a different physical dimension than the Product
+
+Production database invariance is checked before and after the proof.
