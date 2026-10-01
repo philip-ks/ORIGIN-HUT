@@ -1,9 +1,9 @@
 # Origin Hut — AI Development Handoff
 
 **Snapshot:** 2026-10-01  
-**Current milestone:** OH16 — Commercial Offers + Incoterms — COMPLETE / VERIFIED  
-**Development branch:** `work/oh16`  
-**Verified implementation HEAD:** `ab563dec2c6943bb2ad10377af0f02c886a32c02` — `Add OH16 Commercial Offer proof`
+**Current milestone:** OH17 — Landed Cost Engine — IN PROGRESS  
+**Development branch:** `work/oh17`  
+**Verified implementation HEAD:** `968b2b35679d61b2f1a37c18ecca016d83df53c5` — verified OH16 release
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
 **Schema head:** `025`
@@ -501,3 +501,17 @@ Commercial Offer
 
 The engine must preserve what the Incoterm already includes and only
 add costs that remain outside the seller's commercial responsibility.
+
+
+## OH17 start
+
+OH16 was fast-forwarded into `main` at
+`968b2b35679d61b2f1a37c18ecca016d83df53c5`.
+
+`work/oh17` was created from that verified release.
+
+OH17 introduces derived landed-cost scenarios. The source Commercial
+Offer remains immutable; costing assumptions, FX, duty/tax inputs and
+added cost components belong to the scenario layer.
+
+Schema head remains `025` until the first OH17 migration.
