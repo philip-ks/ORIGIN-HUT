@@ -1,9 +1,9 @@
 # Origin Hut — AI Development Handoff
 
 **Snapshot:** 2026-10-01  
-**Current milestone:** OH16 — Commercial Offers + Incoterms — IN PROGRESS  
+**Current milestone:** OH16 — Commercial Offers + Incoterms — COMPLETE / VERIFIED  
 **Development branch:** `work/oh16`  
-**Verified implementation HEAD:** `0457108c454f0d7055cde5686085314b7d0f530c` — `Add OH15 Product Trade Master proof`  
+**Verified implementation HEAD:** `ab563dec2c6943bb2ad10377af0f02c886a32c02` — `Add OH16 Commercial Offer proof`
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
 **Schema head:** `025`
@@ -454,3 +454,50 @@ UOMs must match the underlying generic Product base-UOM dimension.
 
 Migration 025 requires maritime Incoterms to reference a canonical
 trade location carrying the UN/LOCODE maritime-port function.
+
+
+## OH16 verified closeout
+
+OH16 Commercial Offers + Incoterms was locally proven on 2026-10-01
+and GitHub Actions run #65 passed on commit `ab563de`.
+
+Verified proof:
+
+- schema head 025
+- Product Workbench build
+- Incoterms 2020 reference semantics
+- Product -> Manufacturer Product -> packaging
+- Commercial Offer price / currency / UOM
+- MOQ / lead time / payment terms
+- CIF + Jebel Ali / AEJEA
+- maritime port validation
+- Commercial Offer provenance
+- Product-scoped offer discovery
+- production database unchanged at `11|123982|3`
+
+The local disposable-database cleanup emitted a post-proof checkpoint
+warning. This did not affect production invariance or OH16 proof
+results.
+
+OH16 is complete.
+
+## Next milestone
+
+OH17 — Landed Cost Engine.
+
+OH17 should compare supplier offers on a common delivered-cost basis
+without mutating the original Commercial Offer.
+
+Core boundary:
+
+```text
+Commercial Offer
+  + route / origin / destination
+  + cost components
+  + duty / tax assumptions
+  + FX assumptions
+  = landed-cost scenario
+```
+
+The engine must preserve what the Incoterm already includes and only
+add costs that remain outside the seller's commercial responsibility.

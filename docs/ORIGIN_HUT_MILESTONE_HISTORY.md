@@ -21,6 +21,7 @@
 | OH14.5 | `7e89044` | Organization intelligence detail/evidence APIs |
 | OH14.6 | `0afc1ca` -> `4323065` | Product-first Activated Carbon / HS380210 / India-UAE proof |
 | OH15 | `58f0988` -> `0457108` | Product Trade Master: manufacturer products, UOM, specifications, packaging, sites, compliance, provenance and Product Workbench |
+| OH16 | `43d8a7c` -> `ab563de` | Incoterms reference, Commercial Offers, maritime port integrity, Offers Workbench tab and end-to-end proof |
 
 ## Persistent decisions by milestone
 
@@ -174,9 +175,41 @@ Final proof:
 - production DB unchanged
 - GitHub Actions run #56 passed
 
+### OH16
+
+Commercial Offers + Incoterms.
+
+Major outcomes:
+
+- migration 023 — Incoterms 2020 reference
+- migration 024 — Commercial Offer model
+- migration 025 — maritime Incoterm location integrity
+- seller / optional buyer / Manufacturer Product / packaging offer scope
+- price / currency / UOM / MOQ / lead time / payment terms
+- Incoterm rule + edition + named place / port
+- Product-dimension and packaging integrity validation
+- Commercial Offer provenance
+- Product Workbench Offers tab
+- end-to-end OH16 proof with synthetic commercial terms
+
+Final proof:
+
+- schema head 025 passed
+- Product Workbench build passed
+- Incoterms 2020 reference passed
+- Product -> Manufacturer Product -> packaging passed
+- price / currency / UOM passed
+- MOQ / lead time / payment terms passed
+- CIF + Jebel Ali / AEJEA passed
+- maritime port validation passed
+- Commercial Offer provenance passed
+- Product-scoped offer discovery passed
+- production DB unchanged
+- GitHub Actions run #65 passed
+
 ## Next
 
-OH16: Commercial Offers + Incoterms.
+OH17: Landed Cost Engine.
 
 Product remains static master data. Commercial Offer owns pricing,
 quantity basis, MOQ, lead time, payment terms, Incoterm, Incoterms

@@ -1,8 +1,9 @@
 # OH16 — Commercial Offers + Incoterms
 
 **Branch:** `work/oh16`  
-**Status:** in progress  
-**Starting schema head:** `022`
+**Status:** COMPLETE / VERIFIED  
+**Starting schema head:** `022`  
+**Final schema head:** `025`
 
 ## Purpose
 
@@ -193,3 +194,67 @@ Negative proof checks also reject:
 - price UOMs from a different physical dimension than the Product
 
 Production database invariance is checked before and after the proof.
+
+
+## OH16 Verified Closeout
+
+Verified locally on 2026-10-01 with:
+
+    infra/windows/Run-OH16-Proof.ps1
+
+Final result:
+
+```text
+OH16 COMMERCIAL OFFER + INCOTERMS PROOF PASSED
+SCHEMA HEAD 025 PASS
+PRODUCT WORKBENCH BUILD PASS
+INCOTERMS 2020 REFERENCE PASS
+PRODUCT -> MANUFACTURER PRODUCT -> PACKAGING PASS
+COMMERCIAL OFFER PRICE / CURRENCY / UOM PASS
+MOQ / LEAD TIME / PAYMENT TERMS PASS
+CIF + JEBEL ALI NAMED PORT PASS
+MARITIME PORT VALIDATION PASS
+COMMERCIAL OFFER PROVENANCE PASS
+PRODUCT-SCOPED OFFER DISCOVERY PASS
+PRODUCTION DATABASE UNCHANGED
+```
+
+Verified integrated behavior:
+
+- migrations 001-025 apply cleanly
+- API TypeScript typecheck passes
+- API build passes
+- Product Workbench production build passes
+- Incoterms 2020 reference layer exposes all 11 rules
+- Product remains separate from Commercial Offer
+- Manufacturer Product and packaging are preserved as offer scope
+- price basis uses canonical currency + UOM
+- MOQ / lead time / payment terms remain commercial fields
+- CIF offer preserves edition 2020 and canonical destination port AEJEA
+- maritime rules reject free-text-only ports
+- maritime rules require UN/LOCODE maritime-port function
+- incompatible cross-dimension price UOMs are rejected
+- Commercial Offer provenance links through entity_source_links
+- Product-scoped Commercial Offer discovery works
+- production database remains unchanged at `11|123982|3`
+
+The local Windows/PostgreSQL runtime again emitted a final disposable-
+database cleanup warning:
+
+```text
+checkpoint request failed
+```
+
+This occurred after the proof had already passed and after production
+database invariance had been verified. Treat it as a local PostgreSQL
+cleanup/runtime issue, not a Commercial Offer proof failure.
+
+GitHub Actions run #65 on commit `ab563de` passed both:
+
+- Node / API
+- Python / Data
+- Web build
+
+OH16 is complete.
+
+The next milestone is OH17 — Landed Cost Engine.

@@ -158,22 +158,18 @@ Important invariants include immutable source revisions, idempotent canonicaliza
 
 ## Current milestone
 
-OH15 — Product Trade Master — complete and verified.
+OH16 — Commercial Offers + Incoterms — complete and verified.
 
-OH16 — Commercial Offers + Incoterms — in progress.
-
-OH16 begins by introducing a canonical Incoterms reference layer
-before commercial offers are created.
-
-Core commercial boundary:
+OH16 established the commercial layer:
 
 ```text
 Product
   -> Manufacturer Product
   -> Packaging
   -> Commercial Offer
-       -> price / currency
-       -> quantity basis / MOQ
+       -> seller / optional buyer
+       -> price / currency / UOM
+       -> MOQ
        -> lead time
        -> payment terms
        -> Incoterm + edition
@@ -182,8 +178,22 @@ Product
        -> provenance
 ```
 
-Statistical FOB/CIF values in `trade_flows` remain market
-statistics and are not contractual Incoterms.
+Verified constraints include:
+
+- Product master data remains separate from commercial terms
+- statistical FOB/CIF values remain separate from contractual Incoterms
+- Incoterms 2020 reference rules are canonical
+- maritime Incoterms require canonical UN/LOCODE maritime-port locations
+- offer price and MOQ UOMs must match Product physical dimension
+- packaging must belong to the offered Manufacturer Product
+- Commercial Offer provenance is source-backed
+- Product Workbench exposes offers through API-backed UI
+- schema head is migration 025
+
+The next milestone is OH17 — Landed Cost Engine.
+
+OH17 should create derived cost scenarios from Commercial Offers
+without overwriting source commercial terms.
 
 ## Historical UI note
 
