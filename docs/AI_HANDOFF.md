@@ -1,9 +1,9 @@
 # Origin Hut — AI Development Handoff
 
 **Snapshot:** 2026-10-01  
-**Current milestone:** OH17 — Landed Cost Engine — COMPLETE / VERIFIED  
-**Development branch:** `work/oh17`  
-**Verified implementation HEAD:** `00c9c67a3d526ea106ab4d74bd4eea563bf52d25` — verified OH17 Landed Cost release candidate
+**Current milestone:** OH18 — RFQ + Quotation Workflow — IN PROGRESS  
+**Development branch:** `work/oh18`  
+**Verified implementation HEAD:** `f6a56a4fd95a9d20ea4a19fa7e97a1a0ab249f28` — verified OH17 release
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
 **Schema head:** `026`
@@ -574,3 +574,17 @@ Buyer requirement
 
 Tariff and duty intelligence can later feed OH17 scenarios
 automatically without blocking the transactional RFQ/quotation layer.
+
+
+## OH18 start
+
+OH17 was fast-forwarded into `main` at
+`f6a56a4fd95a9d20ea4a19fa7e97a1a0ab249f28`.
+
+`work/oh18` was created from that verified release.
+
+OH18 introduces the transactional RFQ + Quotation workflow while
+reusing the existing canonical Product, Commercial Offer and Landed
+Cost objects.
+
+Schema head remains `026` until the first OH18 migration.

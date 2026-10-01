@@ -2,7 +2,7 @@
 
 **Continuity snapshot:** 2026-10-01  
 **Repository:** `philip-ks/ORIGIN-HUT`  
-**Current development branch:** `work/oh17`  
+**Current development branch:** `work/oh18`  
 **Verified OH14.4 implementation commit:** `1de53b5`  
 **Schema head:** `026`
 
@@ -160,38 +160,31 @@ Important invariants include immutable source revisions, idempotent canonicaliza
 
 OH17 — Landed Cost Engine — complete and verified.
 
-OH17 established a reproducible derived-cost layer over immutable
-Commercial Offers.
+OH18 — RFQ + Quotation Workflow — in progress.
 
-Core verified boundary:
+OH18 establishes the buyer/supplier operating layer:
 
 ```text
-Commercial Offer
-  + target quantity / destination
-  + explicit FX assumptions
-  + explicit included vs added cost components
-  + explicit percentage bases
-  = Landed Cost Scenario
+Buyer requirement
+  -> RFQ
+  -> supplier invitations
+  -> supplier Commercial Offers
+  -> Landed Cost Scenarios
+  -> comparison
+  -> buyer quotation
 ```
 
-Verified rules include:
+Canonical boundaries:
 
-- source Commercial Offer remains immutable
-- included cost breakouts never double-count
-- added costs increase landed cost
-- percentage costs retain explicit taxable base and rate
-- cross-currency scenarios retain FX rate/date/source
-- scenario/component provenance is source-backed
-- Product Workbench exposes Product-scoped Landed Cost scenarios
-- schema head is migration 026
-- production database remained unchanged in the local proof
+- RFQ = buyer demand
+- Commercial Offer = seller response
+- Landed Cost Scenario = derived internal costing
+- Quotation = buyer-facing commercial output
 
-The next milestone is OH18 — RFQ + Quotation Workflow.
+Existing Product, Manufacturer Product, Offer and Landed Cost records
+must be referenced rather than duplicated or overwritten.
 
-OH18 should convert buyer demand into traceable requests, supplier
-responses, normalized offer comparisons and buyer quotations while
-reusing Product, Commercial Offer and Landed Cost objects rather than
-duplicating commercial data.
+Schema head remains migration 026 until the first OH18 migration.
 
 ## Historical UI note
 
