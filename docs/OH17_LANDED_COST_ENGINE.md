@@ -207,3 +207,23 @@ API:
 - `POST /api/landed-cost/scenarios`
 - `GET /api/landed-cost/scenarios/:id`
 - `POST /api/landed-cost/scenarios/:id/components`
+
+
+## OH17.2 — Product Workbench Landed Cost tab
+
+The Product Workbench now includes a `Landed Cost` tab.
+
+It loads Product-scoped scenarios through the canonical API and shows:
+
+- source seller / Incoterm
+- target quantity
+- destination
+- offer amount in scenario currency
+- included cost breakouts
+- added costs
+- total landed cost
+- landed cost per target UOM
+- scenario provenance coverage
+
+Operational values remain API-backed; the UI contains no hard-coded
+commercial cost values.

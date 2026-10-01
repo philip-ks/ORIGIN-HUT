@@ -141,6 +141,68 @@ type CommercialOffer = {
 };
 
 
+type LandedCostComponent = {
+  id: string;
+  componentTypeCode: string;
+  componentTypeName: string;
+  componentCategory: string;
+  sequence: number;
+  description: string | null;
+  includedInOffer: boolean;
+  calculationMethod: string;
+  sourceAmount: number | null;
+  sourceCurrencyCode: string | null;
+  exchangeRateToScenario: number | null;
+  percentageRate: number | null;
+  taxableBaseScenarioCurrency: number | null;
+  amountScenarioCurrency: number;
+  sourceType: string;
+  evidenceCount: number;
+};
+
+
+type LandedCostScenario = {
+  id: string;
+  commercialOfferId: string;
+  commercialOfferReference: string | null;
+  sellerId: string;
+  sellerLegalName: string;
+  manufacturerProductId: string;
+  manufacturerProductName: string;
+  productId: string;
+  productName: string;
+  incotermEdition: number;
+  incotermCode: string;
+  offerNamedPlaceText: string | null;
+  offerNamedTradeLocationUnlocode: string | null;
+  scenarioReference: string | null;
+  status: string;
+  targetQuantity: number;
+  targetUomCode: string;
+  targetUomSymbol: string | null;
+  scenarioCurrencyCode: string;
+  destinationCountryIso2: string;
+  destinationCountryName: string;
+  destinationTradeLocationUnlocode: string | null;
+  destinationTradeLocationName: string | null;
+  destinationOrganizationSiteName: string | null;
+  destinationPlaceText: string | null;
+  offerFxRateToScenario: number;
+  offerFxRateDate: string | null;
+  offerFxSource: string | null;
+  offerAmountSourceCurrency: number;
+  offerCurrencyCode: string;
+  offerAmountScenarioCurrency: number;
+  includedComponentTotalScenarioCurrency: number;
+  addedComponentTotalScenarioCurrency: number;
+  landedCostTotalScenarioCurrency: number;
+  landedCostPerTargetUom: number;
+  sourceType: string;
+  evidenceCount: number;
+  components: LandedCostComponent[];
+};
+
+
 type SiteLink = {
   id: string;
   relationshipType: string;
@@ -234,6 +296,7 @@ const tabs = [
   "Manufacturer Products",
   "Packaging",
   "Offers",
+  "Landed Cost",
   "Sites",
   "Documents",
   "Compliance",
@@ -433,6 +496,12 @@ export function ProductWorkbench({
     useState<Record<string, CommercialOffer[]>>({});
 
   const [
+    landedCostScenarios,
+    setLandedCostScenarios
+  ] =
+    useState<LandedCostScenario[]>([]);
+
+  const [
     sitesByProduct,
     setSitesByProduct
   ] =
@@ -516,7 +585,8 @@ export function ProductWorkbench({
             manufacturerResponse,
             documentResponse,
             complianceResponse,
-            counterpartyResponse
+            counterpartyResponse,
+            landedCostResponse
           ] =
             await Promise.all([
 
@@ -560,6 +630,12 @@ export function ProductWorkbench({
                 organizations: Counterparty[];
               }>(
                 `/api/intelligence/counterparties?productId=${productId}&limit=100`
+              ),
+
+              apiGet<{
+                scenarios: LandedCostScenario[];
+              }>(
+                `/api/landed-cost/scenarios?productId=${productId}&limit=100`
               )
 
             ]);
@@ -598,6 +674,10 @@ export function ProductWorkbench({
 
           setCounterparties(
             counterpartyResponse.organizations
+          );
+
+          setLandedCostScenarios(
+            landedCostResponse.scenarios
           );
 
         }
@@ -1590,6 +1670,206 @@ export function ProductWorkbench({
 
                       }
                     )
+                  }
+
+                </>
+              )
+            : null
+        }
+
+
+        {
+          activeTab === "Landed Cost"
+            ? (
+                <>
+
+                  <SectionTitle
+                    kicker="COSTING"
+                    title="Landed-cost scenarios"
+                    description="Each scenario preserves the source Commercial Offer and adds explicit destination, FX, duty, tax and logistics assumptions without rewriting the offer."
+                  />
+
+                  {
+                    landedCostScenarios.length === 0
+                      ? (
+                          <div className="empty-state">
+                            No landed-cost scenarios recorded.
+                          </div>
+                        )
+                      : (
+                          <div className="stack-list">
+                            {
+                              landedCostScenarios.map(
+                                scenario => {
+
+                                  const destination =
+                                    scenario.destinationTradeLocationName
+                                    ?? scenario.destinationOrganizationSiteName
+                                    ?? scenario.destinationPlaceText
+                                    ?? scenario.destinationCountryName;
+
+                                  const includedComponents =
+                                    scenario.components.filter(
+                                      component =>
+                                        component.includedInOffer
+                                    );
+
+                                  const addedComponents =
+                                    scenario.components.filter(
+                                      component =>
+                                        !component.includedInOffer
+                                    );
+
+                                  return (
+                                    <article
+                                      className="record-card"
+                                      key={scenario.id}
+                                    >
+                                      <div>
+                                        <span className="record-code">
+                                          {scenario.incotermCode}
+                                          {" · "}
+                                          {scenario.incotermEdition}
+                                          {" → "}
+                                          {scenario.destinationCountryIso2}
+                                        </span>
+
+                                        <h3>
+                                          {
+                                            scenario.scenarioCurrencyCode
+                                          }
+                                          {" "}
+                                          {
+                                            scenario.landedCostTotalScenarioCurrency
+                                              .toLocaleString()
+                                          }
+                                        </h3>
+
+                                        <p>
+                                          {
+                                            scenario.sellerLegalName
+                                          }
+                                          {" · "}
+                                          {
+                                            scenario.targetQuantity
+                                          }
+                                          {" "}
+                                          {
+                                            scenario.targetUomCode
+                                          }
+                                          {" · "}
+                                          {
+                                            destination
+                                          }
+                                        </p>
+                                      </div>
+
+                                      <div className="record-meta">
+                                        <span>
+                                          Offer: {
+                                            scenario.scenarioCurrencyCode
+                                          } {
+                                            scenario.offerAmountScenarioCurrency
+                                              .toLocaleString()
+                                          }
+                                        </span>
+
+                                        <span>
+                                          Added: {
+                                            scenario.scenarioCurrencyCode
+                                          } {
+                                            scenario.addedComponentTotalScenarioCurrency
+                                              .toLocaleString()
+                                          }
+                                        </span>
+
+                                        <span>
+                                          Per {
+                                            scenario.targetUomCode
+                                          }: {
+                                            scenario.scenarioCurrencyCode
+                                          } {
+                                            scenario.landedCostPerTargetUom
+                                              .toLocaleString()
+                                          }
+                                        </span>
+
+                                        <span>
+                                          {
+                                            includedComponents.length
+                                          } included breakout
+                                          {
+                                            includedComponents.length === 1
+                                              ? ""
+                                              : "s"
+                                          }
+                                          {" · "}
+                                          {
+                                            addedComponents.length
+                                          } added cost
+                                          {
+                                            addedComponents.length === 1
+                                              ? ""
+                                              : "s"
+                                          }
+                                        </span>
+
+                                        <span>
+                                          {
+                                            scenario.evidenceCount
+                                          } scenario source
+                                          {
+                                            scenario.evidenceCount === 1
+                                              ? " link"
+                                              : " links"
+                                          }
+                                        </span>
+                                      </div>
+
+                                      {
+                                        scenario.components.length > 0
+                                          ? (
+                                              <div className="record-meta">
+                                                {
+                                                  scenario.components.map(
+                                                    component => (
+                                                      <span
+                                                        key={component.id}
+                                                      >
+                                                        {
+                                                          component.includedInOffer
+                                                            ? "Included"
+                                                            : "Added"
+                                                        }
+                                                        {": "}
+                                                        {
+                                                          component.componentTypeName
+                                                        }
+                                                        {" · "}
+                                                        {
+                                                          scenario.scenarioCurrencyCode
+                                                        }
+                                                        {" "}
+                                                        {
+                                                          component.amountScenarioCurrency
+                                                            .toLocaleString()
+                                                        }
+                                                      </span>
+                                                    )
+                                                  )
+                                                }
+                                              </div>
+                                            )
+                                          : null
+                                      }
+                                    </article>
+                                  );
+
+                                }
+                              )
+                            }
+                          </div>
+                        )
                   }
 
                 </>
