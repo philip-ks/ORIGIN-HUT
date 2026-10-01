@@ -104,6 +104,43 @@ type Packaging = {
 };
 
 
+type CommercialOffer = {
+  id: string;
+  sellerId: string;
+  sellerLegalName: string;
+  buyerId: string | null;
+  buyerLegalName: string | null;
+  manufacturerProductId: string;
+  manufacturerProductName: string;
+  packagingConfigurationId: string | null;
+  packagingName: string | null;
+  offerReference: string | null;
+  status: string;
+  unitPrice: number;
+  currencyCode: string;
+  currencyName: string;
+  priceUomCode: string;
+  priceUomSymbol: string | null;
+  minimumOrderQuantity: number | null;
+  minimumOrderUomCode: string | null;
+  leadTimeDays: number | null;
+  paymentTerms: string | null;
+  incotermEdition: number;
+  incotermCode: string;
+  incotermName: string;
+  incotermTransportScope: string;
+  namedLocationRole: string;
+  namedPlaceText: string | null;
+  namedTradeLocationUnlocode: string | null;
+  namedTradeLocationName: string | null;
+  namedOrganizationSiteName: string | null;
+  validFrom: string | null;
+  validTo: string | null;
+  sourceType: string;
+  evidenceCount: number;
+};
+
+
 type SiteLink = {
   id: string;
   relationshipType: string;
@@ -196,6 +233,7 @@ const tabs = [
   "Specifications",
   "Manufacturer Products",
   "Packaging",
+  "Offers",
   "Sites",
   "Documents",
   "Compliance",
@@ -387,6 +425,12 @@ export function ProductWorkbench({
     setPackagingByProduct
   ] =
     useState<Record<string, Packaging[]>>({});
+
+  const [
+    offersByProduct,
+    setOffersByProduct
+  ] =
+    useState<Record<string, CommercialOffer[]>>({});
 
   const [
     sitesByProduct,
@@ -616,6 +660,7 @@ export function ProductWorkbench({
       if (
         ![
           "Packaging",
+          "Offers",
           "Sites",
           "Documents",
           "Compliance"
@@ -649,6 +694,7 @@ export function ProductWorkbench({
 
                   const [
                     packagingResponse,
+                    offerResponse,
                     siteResponse,
                     documentResponse,
                     complianceResponse
@@ -659,6 +705,12 @@ export function ProductWorkbench({
                         packaging: Packaging[];
                       }>(
                         `/api/manufacturer-products/${item.id}/packaging`
+                      ),
+
+                      apiGet<{
+                        offers: CommercialOffer[];
+                      }>(
+                        `/api/commercial-offers?manufacturerProductId=${item.id}&limit=100`
                       ),
 
                       apiGet<{
@@ -687,6 +739,8 @@ export function ProductWorkbench({
                       item.id,
                     packaging:
                       packagingResponse.packaging,
+                    offers:
+                      offerResponse.offers,
                     sites:
                       siteResponse.sites,
                     documents:
@@ -713,6 +767,17 @@ export function ProductWorkbench({
                 item => [
                   item.id,
                   item.packaging
+                ]
+              )
+            )
+          );
+
+          setOffersByProduct(
+            Object.fromEntries(
+              results.map(
+                item => [
+                  item.id,
+                  item.offers
                 ]
               )
             )
@@ -1365,6 +1430,156 @@ export function ProductWorkbench({
                                               </div>
                                             </article>
                                           )
+                                        )
+                                      }
+                                    </div>
+                                  )
+                            }
+                          </div>
+                        );
+
+                      }
+                    )
+                  }
+
+                </>
+              )
+            : null
+        }
+
+
+        {
+          activeTab === "Offers"
+            ? (
+                <>
+
+                  <SectionTitle
+                    kicker="COMMERCIAL"
+                    title="Seller offers & Incoterms"
+                    description="Commercial Offers are time-bound seller propositions. Price, MOQ and Incoterms remain separate from static Product identity and statistical trade values."
+                  />
+
+                  {detailLoading
+                    ? (
+                        <div className="empty-state">
+                          Loading commercial offers…
+                        </div>
+                      )
+                    : null}
+
+                  {!detailLoading
+                    && manufacturerProducts.map(
+                      item => {
+
+                        const offers =
+                          offersByProduct[
+                            item.id
+                          ] ?? [];
+
+                        return (
+                          <div
+                            className="subject-section"
+                            key={item.id}
+                          >
+                            <h3>
+                              {item.name}
+                            </h3>
+                            <p>
+                              {item.manufacturerLegalName}
+                            </p>
+
+                            {
+                              offers.length === 0
+                                ? (
+                                    <div className="empty-state compact">
+                                      No commercial offers recorded.
+                                    </div>
+                                  )
+                                : (
+                                    <div className="stack-list">
+                                      {
+                                        offers.map(
+                                          offer => {
+
+                                            const namedLocation =
+                                              offer.namedTradeLocationName
+                                              ?? offer.namedOrganizationSiteName
+                                              ?? offer.namedPlaceText
+                                              ?? "Named place —";
+
+                                            const priceBasis =
+                                              `${offer.currencyCode} ${offer.unitPrice.toLocaleString()} / ${offer.priceUomCode}`;
+
+                                            const moq =
+                                              offer.minimumOrderQuantity != null
+                                                ? `MOQ ${offer.minimumOrderQuantity} ${offer.minimumOrderUomCode ?? ""}`
+                                                : "MOQ —";
+
+                                            return (
+                                              <article
+                                                className="record-card"
+                                                key={offer.id}
+                                              >
+                                                <div>
+                                                  <span className="record-code">
+                                                    {offer.incotermCode}
+                                                    {" · "}
+                                                    {offer.incotermEdition}
+                                                  </span>
+                                                  <h3>
+                                                    {priceBasis}
+                                                  </h3>
+                                                  <p>
+                                                    {offer.sellerLegalName}
+                                                    {
+                                                      offer.buyerLegalName
+                                                        ? ` → ${offer.buyerLegalName}`
+                                                        : ""
+                                                    }
+                                                  </p>
+                                                </div>
+
+                                                <div className="record-meta">
+                                                  <span>
+                                                    {namedLocation}
+                                                    {
+                                                      offer.namedTradeLocationUnlocode
+                                                        ? ` · ${offer.namedTradeLocationUnlocode}`
+                                                        : ""
+                                                    }
+                                                  </span>
+                                                  <span>
+                                                    {moq}
+                                                  </span>
+                                                  <span>
+                                                    {
+                                                      offer.packagingName
+                                                      ?? "Packaging —"
+                                                    }
+                                                  </span>
+                                                  <span>
+                                                    {
+                                                      offer.leadTimeDays != null
+                                                        ? `${offer.leadTimeDays} day lead time`
+                                                        : "Lead time —"
+                                                    }
+                                                  </span>
+                                                  <span>
+                                                    {offer.status}
+                                                    {" · "}
+                                                    {offer.evidenceCount}
+                                                    {" source "}
+                                                    {
+                                                      offer.evidenceCount === 1
+                                                        ? "link"
+                                                        : "links"
+                                                    }
+                                                  </span>
+                                                </div>
+                                              </article>
+                                            );
+
+                                          }
                                         )
                                       }
                                     </div>
