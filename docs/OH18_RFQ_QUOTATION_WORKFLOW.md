@@ -276,3 +276,38 @@ API:
 - `GET /api/rfqs/:id`
 - `POST /api/rfqs/:id/lines`
 - `POST /api/rfqs/:id/suppliers`
+
+
+## OH18.2 — Supplier response linkage
+
+Migration 028 introduces `rfq_responses`.
+
+A response links:
+
+- RFQ
+- RFQ line
+- invited supplier record
+- canonical Commercial Offer
+- response status / timestamp
+- provenance
+
+No commercial terms are copied into `rfq_responses`.
+
+Validation enforces:
+
+- RFQ line belongs to the same RFQ
+- supplier invitation belongs to the same RFQ
+- Commercial Offer seller matches the invited supplier
+- buyer-specific Commercial Offer matches the RFQ buyer
+- Commercial Offer Product matches the RFQ line Product
+- Manufacturer Product restrictions are respected
+- packaging restrictions are respected
+
+A submitted response updates the supplier invitation to
+`responded`. RFQ status becomes `partially_responded` or
+`responded` based on supplier terminal states.
+
+API:
+
+- `GET /api/rfqs/:id/responses`
+- `POST /api/rfqs/:id/responses`

@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `f6a56a4fd95a9d20ea4a19fa7e97a1a0ab249f28` — verified OH17 release
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
-**Schema head:** `027`
+**Schema head:** `028`
 
 ## Verified state
 
@@ -598,3 +598,10 @@ supplier invitations.
 RFQ demand stays distinct from Commercial Offer response. Product,
 Manufacturer Product, packaging, UOM, destination, currency and
 Incoterm objects are referenced canonically rather than duplicated.
+
+
+## OH18.2 — Supplier responses
+
+Migration 028 links RFQ line + invited supplier to a canonical
+Commercial Offer. Offer pricing/Incoterm/packaging remain in the
+Commercial Offer rather than being duplicated into RFQ response data.

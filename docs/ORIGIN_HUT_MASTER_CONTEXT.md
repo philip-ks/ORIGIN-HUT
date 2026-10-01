@@ -4,7 +4,7 @@
 **Repository:** `philip-ks/ORIGIN-HUT`  
 **Current development branch:** `work/oh18`  
 **Verified OH14.4 implementation commit:** `1de53b5`  
-**Schema head:** `027`
+**Schema head:** `028`
 
 ## Purpose
 
@@ -184,7 +184,7 @@ Canonical boundaries:
 Existing Product, Manufacturer Product, Offer and Landed Cost records
 must be referenced rather than duplicated or overwritten.
 
-Current schema head: migration 027.
+Current schema head: migration 028.
 
 ## Historical UI note
 

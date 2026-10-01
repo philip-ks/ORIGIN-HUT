@@ -37,6 +37,10 @@ import {
 } from "./routes/rfqs.js";
 
 import {
+  rfqResponseRoutes
+} from "./routes/rfq-responses.js";
+
+import {
   specificationRoutes
 } from "./routes/specifications.js";
 
@@ -125,6 +129,10 @@ await app.register(
 
 await app.register(
   rfqRoutes
+);
+
+await app.register(
+  rfqResponseRoutes
 );
 
 await app.register(
