@@ -590,6 +590,8 @@ DECLARE
     v_destination_country_id UUID;
     v_site_country_id UUID;
     v_quantity_in_price_uom NUMERIC;
+    v_included NUMERIC := 0;
+    v_added NUMERIC := 0;
 BEGIN
 
     SELECT
@@ -756,6 +758,56 @@ BEGIN
             * NEW.offer_fx_rate_to_scenario,
             12
         );
+
+
+    IF TG_OP = 'UPDATE' THEN
+
+        SELECT
+            COALESCE(
+                SUM(
+                    amount_scenario_currency
+                ) FILTER (
+                    WHERE included_in_offer
+                ),
+                0
+            ),
+            COALESCE(
+                SUM(
+                    amount_scenario_currency
+                ) FILTER (
+                    WHERE NOT included_in_offer
+                ),
+                0
+            )
+        INTO
+            v_included,
+            v_added
+        FROM landed_cost_components
+        WHERE scenario_id =
+              NEW.id;
+
+    END IF;
+
+
+    NEW.included_component_total_scenario_currency :=
+        v_included;
+
+    NEW.added_component_total_scenario_currency :=
+        v_added;
+
+    NEW.landed_cost_total_scenario_currency :=
+        NEW.offer_amount_scenario_currency
+        + v_added;
+
+    NEW.landed_cost_per_target_uom :=
+        (
+            NEW.offer_amount_scenario_currency
+            + v_added
+        )
+        / NEW.target_quantity;
+
+    NEW.calculated_at :=
+        NOW();
 
 
     RETURN NEW;
@@ -936,36 +988,6 @@ END;
 $$;
 
 
-CREATE OR REPLACE FUNCTION
-originhut_refresh_landed_cost_after_scenario()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-AS $$
-BEGIN
-
-    NEW.included_component_total_scenario_currency :=
-        0;
-
-    NEW.added_component_total_scenario_currency :=
-        0;
-
-    NEW.landed_cost_total_scenario_currency :=
-        NEW.offer_amount_scenario_currency;
-
-    NEW.landed_cost_per_target_uom :=
-        NEW.offer_amount_scenario_currency
-        / NEW.target_quantity;
-
-    NEW.calculated_at :=
-        NOW();
-
-
-    RETURN NEW;
-
-END;
-$$;
-
-
 CREATE TRIGGER
 trg_landed_cost_scenarios_prepare
 BEFORE INSERT OR UPDATE OF
@@ -983,15 +1005,6 @@ ON landed_cost_scenarios
 FOR EACH ROW
 EXECUTE FUNCTION
 originhut_prepare_landed_cost_scenario();
-
-
-CREATE TRIGGER
-trg_landed_cost_scenarios_initialize_totals
-BEFORE INSERT
-ON landed_cost_scenarios
-FOR EACH ROW
-EXECUTE FUNCTION
-originhut_refresh_landed_cost_after_scenario();
 
 
 CREATE TRIGGER
