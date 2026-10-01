@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `968b2b35679d61b2f1a37c18ecca016d83df53c5` — verified OH16 release
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
-**Schema head:** `025`
+**Schema head:** `026`
 
 ## Verified state
 
@@ -515,3 +515,15 @@ Offer remains immutable; costing assumptions, FX, duty/tax inputs and
 added cost components belong to the scenario layer.
 
 Schema head remains `025` until the first OH17 migration.
+
+
+## OH17.1 — Landed Cost Scenario engine
+
+Migration 026 introduces landed-cost scenarios and cost components.
+
+The source Commercial Offer remains immutable.
+
+Included components are informational and do not increase the total;
+only added components increase landed cost. Cross-currency scenarios
+require explicit FX rate/date/source. Percentage cost components
+retain both rate and taxable base.

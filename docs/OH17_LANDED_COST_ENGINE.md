@@ -157,3 +157,53 @@ offer scope, preserving each assumption independently.
 The proof must demonstrate that two supplier offers can eventually be
 normalized to a common delivered-cost basis without changing either
 source offer.
+
+
+## OH17.1 — Scenario + component engine
+
+Migration 026 introduces:
+
+- `landed_cost_component_types`
+- `landed_cost_scenarios`
+- `landed_cost_components`
+
+Core calculation rule:
+
+```text
+offer amount in scenario currency
++ components where included_in_offer = false
+= landed cost total
+```
+
+Components marked `included_in_offer = true` remain visible as
+commercial breakouts but are not added again. This prevents
+double-counting costs already contained in terms such as CIF.
+
+Scenario calculations preserve:
+
+- source Commercial Offer
+- target quantity / UOM
+- target currency
+- destination
+- offer FX rate / date / source when cross-currency
+- source offer amount
+- included component total
+- added component total
+- final landed cost total
+- landed cost per target UOM
+- source provenance
+
+Component calculations support:
+
+- fixed amount + currency + explicit FX rate
+- percentage + explicit taxable base
+
+No statutory tariff, tax or FX rate is hard-coded.
+
+API:
+
+- `GET /api/landed-cost/component-types`
+- `GET /api/landed-cost/scenarios`
+- `POST /api/landed-cost/scenarios`
+- `GET /api/landed-cost/scenarios/:id`
+- `POST /api/landed-cost/scenarios/:id/components`

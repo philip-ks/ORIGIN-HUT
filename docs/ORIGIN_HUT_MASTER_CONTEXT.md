@@ -4,7 +4,7 @@
 **Repository:** `philip-ks/ORIGIN-HUT`  
 **Current development branch:** `work/oh17`  
 **Verified OH14.4 implementation commit:** `1de53b5`  
-**Schema head:** `025`
+**Schema head:** `026`
 
 ## Purpose
 
@@ -185,7 +185,7 @@ Important rules:
 - duty/tax rates must not be hard-coded as universal facts
 - scenario totals must be reproducible from stored inputs
 
-Schema head remains migration 025 until the first OH17 migration.
+Current schema head: migration 026.
 
 ## Historical UI note
 

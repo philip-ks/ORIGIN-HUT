@@ -29,6 +29,10 @@ import {
 } from "./routes/commercial-offers.js";
 
 import {
+  landedCostRoutes
+} from "./routes/landed-cost.js";
+
+import {
   specificationRoutes
 } from "./routes/specifications.js";
 
@@ -109,6 +113,10 @@ await app.register(
 
 await app.register(
   commercialOfferRoutes
+);
+
+await app.register(
+  landedCostRoutes
 );
 
 await app.register(
