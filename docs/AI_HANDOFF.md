@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `0457108c454f0d7055cde5686085314b7d0f530c` — `Add OH15 Product Trade Master proof`  
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
-**Schema head:** `023`
+**Schema head:** `024`
 
 ## Verified state
 
@@ -436,3 +436,15 @@ OH15 was fast-forwarded into `main` at
 OH16.1 begins with a canonical Incoterms reference layer. Commercial
 offers will reference Incoterm rule + edition + named place/port.
 Statistical FOB/CIF values remain separate market-data measures.
+
+
+## OH16.2 — Commercial Offers
+
+Migration 024 introduces canonical `commercial_offers`.
+
+The offer layer owns seller/buyer context, Manufacturer Product,
+packaging, price/currency/UOM, MOQ, lead time, payment terms,
+Incoterm + edition, named place/port, validity and provenance.
+
+Maritime Incoterms require a canonical trade location. Price and MOQ
+UOMs must match the underlying generic Product base-UOM dimension.

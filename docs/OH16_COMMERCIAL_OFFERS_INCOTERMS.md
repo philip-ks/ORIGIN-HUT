@@ -102,3 +102,45 @@ Buyer may be optional so Origin Hut can represent both:
 - buyer-specific quotations
 
 Commercial Offer must remain separate from Product identity.
+
+
+## OH16.2 — Commercial Offers
+
+Migration 024 introduces `commercial_offers`.
+
+A Commercial Offer now binds:
+
+- seller organization
+- optional buyer organization
+- Manufacturer Product
+- optional Product packaging configuration
+- unit price
+- ISO 4217 currency
+- price UOM
+- optional MOQ + UOM
+- optional lead time
+- optional payment terms
+- Incoterm rule + edition
+- named place / port
+- validity
+- source record / confidence / provenance
+
+Named-location semantics are enforced:
+
+- maritime rules require a canonical trade location
+- any-mode rules may use free named-place text, a canonical trade
+  location, or an organization site
+
+Product-dimension integrity is also enforced:
+
+- price UOM must match the generic Product base-UOM dimension
+- MOQ UOM must match the generic Product base-UOM dimension
+- packaging must belong to the same Manufacturer Product
+
+API:
+
+- `GET /api/commercial-offers`
+- `POST /api/commercial-offers`
+- `GET /api/commercial-offers/:id`
+
+Commercial Offer provenance links through `entity_source_links`.

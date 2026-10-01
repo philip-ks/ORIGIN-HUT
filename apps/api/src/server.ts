@@ -25,6 +25,10 @@ import {
 } from "./routes/incoterms.js";
 
 import {
+  commercialOfferRoutes
+} from "./routes/commercial-offers.js";
+
+import {
   specificationRoutes
 } from "./routes/specifications.js";
 
@@ -101,6 +105,10 @@ await app.register(
 
 await app.register(
   incotermRoutes
+);
+
+await app.register(
+  commercialOfferRoutes
 );
 
 await app.register(
