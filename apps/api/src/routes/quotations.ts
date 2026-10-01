@@ -378,6 +378,25 @@ const createLineSchema =
     ) => {
 
       if (
+        value.sourceLandedCostScenarioId
+        && !value.sourceCommercialOfferId
+      ) {
+
+        ctx.addIssue({
+          code:
+            "custom",
+          path:
+            [
+              "sourceCommercialOfferId"
+            ],
+          message:
+            "sourceCommercialOfferId is required when sourceLandedCostScenarioId is supplied."
+        });
+
+      }
+
+
+      if (
         value.pricingMethod
         === "manual"
         && value.quotedUnitPrice

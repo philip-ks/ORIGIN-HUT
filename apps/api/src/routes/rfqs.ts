@@ -855,7 +855,7 @@ export async function rfqRoutes(
       const result =
         await database.query(
           `
-          SELECT DISTINCT
+          SELECT
             r.id::text,
             r.updated_at,
             COUNT(*) OVER()::int
@@ -867,14 +867,6 @@ export async function rfqRoutes(
             ON destination_country.id =
                r.destination_country_id
 
-          LEFT JOIN rfq_lines rl
-            ON rl.rfq_id =
-               r.id
-
-          LEFT JOIN rfq_suppliers rs
-            ON rs.rfq_id =
-               r.id
-
           WHERE
             (
               $1::uuid IS NULL
@@ -884,14 +876,26 @@ export async function rfqRoutes(
 
             AND (
               $2::uuid IS NULL
-              OR rs.supplier_organization_id =
-                 $2::uuid
+              OR EXISTS (
+                SELECT 1
+                FROM rfq_suppliers rs
+                WHERE
+                  rs.rfq_id = r.id
+                  AND rs.supplier_organization_id =
+                      $2::uuid
+              )
             )
 
             AND (
               $3::uuid IS NULL
-              OR rl.product_id =
-                 $3::uuid
+              OR EXISTS (
+                SELECT 1
+                FROM rfq_lines rl
+                WHERE
+                  rl.rfq_id = r.id
+                  AND rl.product_id =
+                      $3::uuid
+              )
             )
 
             AND (

@@ -396,3 +396,16 @@ API:
 - `POST /api/quotations`
 - `GET /api/quotations/:id`
 - `POST /api/quotations/:id/lines`
+
+
+### OH18.4 traceability hardening
+
+Quotation validation also requires:
+
+- maritime quotation terms use a canonical UN/LOCODE maritime port
+- source RFQ line Manufacturer Product / packaging restrictions remain satisfied
+- a source Commercial Offer tied to an RFQ line must be a submitted RFQ response
+- a source Landed Cost Scenario must be accompanied by its source Commercial Offer
+
+This prevents a quotation from citing an unrelated offer or costing
+scenario merely because Product identity happens to match.

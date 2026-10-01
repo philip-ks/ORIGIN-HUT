@@ -442,7 +442,9 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     v_rfq_buyer_id UUID;
-    v_location_country_id UUID;
+    v_incoterm_named_location_role TEXT;
+    v_location_function_codes TEXT;
+    v_location_marked_for_deletion BOOLEAN;
     v_site_country_id UUID;
 BEGIN
 
@@ -472,19 +474,82 @@ BEGIN
     END IF;
 
 
-    IF NEW.named_trade_location_id IS NOT NULL THEN
+    IF NEW.incoterm_rule_id IS NOT NULL THEN
 
-        SELECT country_id
-        INTO v_location_country_id
-        FROM trade_locations
+        SELECT named_location_role
+        INTO v_incoterm_named_location_role
+        FROM incoterm_rules
         WHERE
-            id = NEW.named_trade_location_id
-            AND marked_for_deletion = FALSE;
+            id = NEW.incoterm_rule_id
+            AND is_active = TRUE;
 
 
         IF NOT FOUND THEN
             RAISE EXCEPTION
+                'Quotation Incoterm does not exist or is inactive.';
+        END IF;
+
+
+        IF
+            NEW.named_place_text IS NULL
+            AND NEW.named_trade_location_id IS NULL
+            AND NEW.named_organization_site_id IS NULL
+        THEN
+            RAISE EXCEPTION
+                'Quotation Incoterm requires a named place or location.';
+        END IF;
+
+
+        IF
+            v_incoterm_named_location_role IN (
+                'shipment_port',
+                'destination_port'
+            )
+            AND NEW.named_trade_location_id IS NULL
+        THEN
+            RAISE EXCEPTION
+                'Maritime Quotation Incoterm requires a canonical maritime trade location.';
+        END IF;
+
+    END IF;
+
+
+    IF NEW.named_trade_location_id IS NOT NULL THEN
+
+        SELECT
+            function_codes,
+            marked_for_deletion
+        INTO
+            v_location_function_codes,
+            v_location_marked_for_deletion
+        FROM trade_locations
+        WHERE id =
+              NEW.named_trade_location_id;
+
+
+        IF NOT FOUND
+           OR v_location_marked_for_deletion
+        THEN
+            RAISE EXCEPTION
                 'Quotation named trade location does not exist or is inactive.';
+        END IF;
+
+
+        IF
+            v_incoterm_named_location_role IN (
+                'shipment_port',
+                'destination_port'
+            )
+            AND (
+                v_location_function_codes IS NULL
+                OR LEFT(
+                    v_location_function_codes,
+                    1
+                ) <> '1'
+            )
+        THEN
+            RAISE EXCEPTION
+                'Quotation maritime Incoterm requires a UN/LOCODE maritime-port location.';
         END IF;
 
     END IF;
@@ -684,6 +749,28 @@ BEGIN
                 'Quotation Product must match source RFQ line Product.';
         END IF;
 
+
+        IF
+            v_rfq_line.manufacturer_product_id IS NOT NULL
+            AND NEW.manufacturer_product_id
+                IS DISTINCT FROM
+                v_rfq_line.manufacturer_product_id
+        THEN
+            RAISE EXCEPTION
+                'Quotation Manufacturer Product must satisfy the source RFQ line restriction.';
+        END IF;
+
+
+        IF
+            v_rfq_line.packaging_configuration_id IS NOT NULL
+            AND NEW.packaging_configuration_id
+                IS DISTINCT FROM
+                v_rfq_line.packaging_configuration_id
+        THEN
+            RAISE EXCEPTION
+                'Quotation packaging must satisfy the source RFQ line restriction.';
+        END IF;
+
     END IF;
 
 
@@ -737,10 +824,35 @@ BEGIN
                 'Source Commercial Offer packaging must match Quotation line restriction.';
         END IF;
 
+
+        IF
+            NEW.source_rfq_line_id IS NOT NULL
+            AND NOT EXISTS (
+                SELECT 1
+                FROM rfq_responses rr
+                WHERE
+                    rr.rfq_line_id =
+                        NEW.source_rfq_line_id
+                    AND rr.commercial_offer_id =
+                        NEW.source_commercial_offer_id
+                    AND rr.status =
+                        'submitted'
+            )
+        THEN
+            RAISE EXCEPTION
+                'Source Commercial Offer must be a submitted response to the source RFQ line.';
+        END IF;
+
     END IF;
 
 
     IF NEW.source_landed_cost_scenario_id IS NOT NULL THEN
+
+        IF NEW.source_commercial_offer_id IS NULL THEN
+            RAISE EXCEPTION
+                'Source Landed Cost Scenario requires its source Commercial Offer.';
+        END IF;
+
 
         SELECT
             lcs.commercial_offer_id,

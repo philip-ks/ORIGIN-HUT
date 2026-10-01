@@ -494,6 +494,55 @@ class QuotationPostgresIntegrationTest(
             ).fetchone()[0]
         )
 
+        rfq_supplier_id = str(
+            connection.execute(
+                """
+                INSERT INTO rfq_suppliers (
+                    rfq_id,
+                    supplier_organization_id,
+                    status,
+                    invited_at
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    'invited',
+                    NOW()
+                )
+                RETURNING id
+                """,
+                (
+                    rfq_id,
+                    supplier_id,
+                ),
+            ).fetchone()[0]
+        )
+
+        connection.execute(
+            """
+            INSERT INTO rfq_responses (
+                rfq_id,
+                rfq_line_id,
+                rfq_supplier_id,
+                commercial_offer_id,
+                status
+            )
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                'submitted'
+            )
+            """,
+            (
+                rfq_id,
+                rfq_line_id,
+                rfq_supplier_id,
+                offer_id,
+            ),
+        )
+
         scenario_id = str(
             connection.execute(
                 """
@@ -906,6 +955,120 @@ class QuotationPostgresIntegrationTest(
                             ids[
                                 "product_id"
                             ],
+                        ),
+                    )
+
+
+    def test_quotation_line_requires_offer_to_be_rfq_response(
+        self,
+    ) -> None:
+
+        with psycopg.connect(
+            os.environ[
+                "DATABASE_URL"
+            ]
+        ) as connection:
+
+            ids = self._seed(
+                connection,
+                "UNLINKED",
+            )
+
+            quotation_id = self._create_quotation(
+                connection,
+                ids,
+                "UNLINKED",
+            )
+
+            unrelated_offer_id = connection.execute(
+                """
+                INSERT INTO commercial_offers (
+                    seller_organization_id,
+                    buyer_organization_id,
+                    manufacturer_product_id,
+                    packaging_configuration_id,
+                    offer_reference,
+                    status,
+                    unit_price,
+                    currency_id,
+                    price_uom_id,
+                    incoterm_rule_id,
+                    named_trade_location_id
+                )
+                SELECT
+                    co.seller_organization_id,
+                    co.buyer_organization_id,
+                    co.manufacturer_product_id,
+                    co.packaging_configuration_id,
+                    'OH18-QUOTE-OFFER-UNLINKED-OTHER',
+                    'active',
+                    1200,
+                    co.currency_id,
+                    co.price_uom_id,
+                    co.incoterm_rule_id,
+                    co.named_trade_location_id
+                FROM commercial_offers co
+                WHERE co.id = %s
+                RETURNING id
+                """,
+                (
+                    ids[
+                        "offer_id"
+                    ],
+                ),
+            ).fetchone()[0]
+
+            with self.assertRaises(
+                psycopg.errors.RaiseException
+            ):
+
+                with connection.transaction():
+
+                    connection.execute(
+                        """
+                        INSERT INTO quotation_lines (
+                            quotation_id,
+                            line_number,
+                            product_id,
+                            manufacturer_product_id,
+                            packaging_configuration_id,
+                            source_rfq_line_id,
+                            source_commercial_offer_id,
+                            quantity,
+                            uom_id,
+                            pricing_method,
+                            quoted_unit_price
+                        )
+                        SELECT
+                            %s,
+                            1,
+                            %s,
+                            %s,
+                            %s,
+                            %s,
+                            %s,
+                            20,
+                            u.id,
+                            'manual',
+                            1300
+                        FROM units_of_measure u
+                        WHERE u.code = 'TNE'
+                        """,
+                        (
+                            quotation_id,
+                            ids[
+                                "product_id"
+                            ],
+                            ids[
+                                "manufacturer_product_id"
+                            ],
+                            ids[
+                                "packaging_id"
+                            ],
+                            ids[
+                                "rfq_line_id"
+                            ],
+                            unrelated_offer_id,
                         ),
                     )
 
