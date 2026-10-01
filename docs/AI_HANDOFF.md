@@ -1,9 +1,9 @@
 # Origin Hut — AI Development Handoff
 
 **Snapshot:** 2026-10-01  
-**Current milestone:** OH17 — Landed Cost Engine — IN PROGRESS  
+**Current milestone:** OH17 — Landed Cost Engine — COMPLETE / VERIFIED  
 **Development branch:** `work/oh17`  
-**Verified implementation HEAD:** `968b2b35679d61b2f1a37c18ecca016d83df53c5` — verified OH16 release
+**Verified implementation HEAD:** `00c9c67a3d526ea106ab4d74bd4eea563bf52d25` — verified OH17 Landed Cost release candidate
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
 **Schema head:** `026`
@@ -527,3 +527,50 @@ Included components are informational and do not increase the total;
 only added components increase landed cost. Cross-currency scenarios
 require explicit FX rate/date/source. Percentage cost components
 retain both rate and taxable base.
+
+
+## OH17 verified closeout
+
+OH17 Landed Cost Engine was locally proven on 2026-10-01 and
+GitHub Actions run #74 passed on commit `00c9c67`.
+
+Verified proof:
+
+- schema head 026
+- Product Workbench build
+- source Commercial Offer immutability
+- offer amount normalization
+- included cost no-double-count
+- added fixed cost
+- percentage duty base
+- final synthetic total USD 24,780
+- final synthetic USD 1,239/TNE
+- cross-currency FX provenance
+- scenario + component provenance
+- Product-scoped scenario discovery
+- production DB unchanged at `11|123982|3`
+
+The post-proof disposable-database checkpoint warning remains a local
+PostgreSQL cleanup issue and does not affect the verified result.
+
+OH17 is complete.
+
+## Next milestone
+
+OH18 — RFQ + Quotation Workflow.
+
+The next operating layer should turn buyer demand into a traceable
+commercial workflow:
+
+```text
+Buyer requirement
+  -> RFQ
+  -> supplier invitations
+  -> supplier Commercial Offers
+  -> Landed Cost Scenarios
+  -> comparison
+  -> buyer quotation
+```
+
+Tariff and duty intelligence can later feed OH17 scenarios
+automatically without blocking the transactional RFQ/quotation layer.

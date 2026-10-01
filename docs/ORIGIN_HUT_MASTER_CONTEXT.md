@@ -158,34 +158,40 @@ Important invariants include immutable source revisions, idempotent canonicaliza
 
 ## Current milestone
 
-OH16 — Commercial Offers + Incoterms — complete and verified.
+OH17 — Landed Cost Engine — complete and verified.
 
-OH17 — Landed Cost Engine — in progress.
+OH17 established a reproducible derived-cost layer over immutable
+Commercial Offers.
 
-OH17 derives comparable delivered-cost scenarios from Commercial
-Offers without overwriting Product or Offer data.
-
-Core boundary:
+Core verified boundary:
 
 ```text
 Commercial Offer
   + target quantity / destination
   + explicit FX assumptions
-  + explicit cost components
-  + duty / tax assumptions
+  + explicit included vs added cost components
+  + explicit percentage bases
   = Landed Cost Scenario
 ```
 
-Important rules:
+Verified rules include:
 
 - source Commercial Offer remains immutable
-- Incoterm + named place are preserved as source context
-- included vs added costs must be explicit
-- currency conversion assumptions must be inspectable
-- duty/tax rates must not be hard-coded as universal facts
-- scenario totals must be reproducible from stored inputs
+- included cost breakouts never double-count
+- added costs increase landed cost
+- percentage costs retain explicit taxable base and rate
+- cross-currency scenarios retain FX rate/date/source
+- scenario/component provenance is source-backed
+- Product Workbench exposes Product-scoped Landed Cost scenarios
+- schema head is migration 026
+- production database remained unchanged in the local proof
 
-Current schema head: migration 026.
+The next milestone is OH18 — RFQ + Quotation Workflow.
+
+OH18 should convert buyer demand into traceable requests, supplier
+responses, normalized offer comparisons and buyer quotations while
+reusing Product, Commercial Offer and Landed Cost objects rather than
+duplicating commercial data.
 
 ## Historical UI note
 

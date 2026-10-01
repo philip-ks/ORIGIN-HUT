@@ -22,6 +22,7 @@
 | OH14.6 | `0afc1ca` -> `4323065` | Product-first Activated Carbon / HS380210 / India-UAE proof |
 | OH15 | `58f0988` -> `0457108` | Product Trade Master: manufacturer products, UOM, specifications, packaging, sites, compliance, provenance and Product Workbench |
 | OH16 | `43d8a7c` -> `ab563de` | Incoterms reference, Commercial Offers, maritime port integrity, Offers Workbench tab and end-to-end proof |
+| OH17 | `f576b71` -> `00c9c67` | Landed Cost scenarios/components, Product Workbench costing tab and end-to-end proof |
 
 ## Persistent decisions by milestone
 
@@ -207,9 +208,46 @@ Final proof:
 - production DB unchanged
 - GitHub Actions run #65 passed
 
+### OH17
+
+Landed Cost Engine.
+
+Major outcomes:
+
+- migration 026 — landed cost scenarios + components
+- canonical landed cost component vocabulary
+- immutable source Commercial Offer boundary
+- target quantity / UOM / destination normalization
+- explicit scenario currency
+- explicit FX rate/date/source for cross-currency scenarios
+- included-vs-added cost semantics
+- fixed-amount and percentage cost components
+- explicit percentage taxable base
+- automatic total / per-UOM recalculation
+- scenario + component provenance
+- Product Workbench Landed Cost tab
+- end-to-end OH17 proof with synthetic assumptions
+
+Final proof:
+
+- schema head 026 passed
+- Product Workbench build passed
+- source Commercial Offer immutability passed
+- offer normalization passed
+- included cost no-double-count passed
+- added fixed cost passed
+- percentage duty base passed
+- synthetic landed total USD 24,780 passed
+- synthetic landed cost USD 1,239/TNE passed
+- cross-currency FX provenance passed
+- landed-cost provenance passed
+- Product-scoped scenario discovery passed
+- production DB unchanged
+- GitHub Actions run #74 passed
+
 ## Next
 
-OH17: Landed Cost Engine.
+OH18: RFQ + Quotation Workflow.
 
 Product remains static master data. Commercial Offer owns pricing,
 quantity basis, MOQ, lead time, payment terms, Incoterm, Incoterms

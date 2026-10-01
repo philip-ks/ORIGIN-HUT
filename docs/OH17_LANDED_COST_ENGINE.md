@@ -1,8 +1,9 @@
 # OH17 — Landed Cost Engine
 
 **Branch:** `work/oh17`  
-**Status:** in progress  
-**Starting schema head:** `025`
+**Status:** COMPLETE / VERIFIED  
+**Starting schema head:** `025`  
+**Final schema head:** `026`
 
 ## Purpose
 
@@ -261,3 +262,66 @@ It also verifies:
 - Product-scoped scenario discovery
 - scenario + component provenance
 - production database invariance
+
+
+## OH17 Verified Closeout
+
+Verified locally on 2026-10-01 with:
+
+    infra/windows/Run-OH17-Proof.ps1
+
+Final result:
+
+```text
+OH17 LANDED COST ENGINE PROOF PASSED
+SCHEMA HEAD 026 PASS
+PRODUCT WORKBENCH BUILD PASS
+SOURCE COMMERCIAL OFFER IMMUTABILITY PASS
+OFFER AMOUNT NORMALIZATION PASS
+INCLUDED COST NO DOUBLE COUNT PASS
+ADDED FIXED COST PASS
+PERCENTAGE DUTY BASE PASS
+LANDED COST TOTAL 24780 USD PASS
+LANDED COST PER TNE 1239 USD PASS
+CROSS-CURRENCY FX PROVENANCE PASS
+LANDED COST PROVENANCE PASS
+PRODUCT-SCOPED SCENARIO DISCOVERY PASS
+PRODUCTION DATABASE UNCHANGED
+```
+
+Verified integrated behavior:
+
+- migrations 001-026 apply cleanly
+- API typecheck/build passes
+- Product Workbench production build passes
+- source CIF Commercial Offer remains unchanged
+- target quantity normalization produces USD 23,000 offer amount for 20 TNE at USD 1,150/TNE
+- included insurance breakout is retained but not double-counted
+- added destination handling increases scenario total
+- percentage duty retains an explicit taxable base and rate
+- final synthetic scenario totals USD 24,780 / USD 1,239 per TNE
+- cross-currency FX rate/date/source are retained explicitly
+- Product-scoped landed-cost scenario discovery works
+- scenario and component provenance links are present
+- production database remains unchanged at `11|123982|3`
+
+The local Windows/PostgreSQL runtime again emitted a final disposable-
+database cleanup warning:
+
+```text
+checkpoint request failed
+```
+
+This occurred after the proof footer and after production invariance
+had already passed. It is a local PostgreSQL cleanup/runtime issue,
+not an OH17 proof failure.
+
+GitHub Actions run #74 on commit `00c9c67` passed:
+
+- Node / API
+- Python / Data
+- Web build
+
+OH17 is complete.
+
+The next milestone is OH18 — RFQ + Quotation Workflow.
