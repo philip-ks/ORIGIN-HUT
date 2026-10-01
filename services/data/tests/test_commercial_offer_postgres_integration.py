@@ -83,6 +83,35 @@ class CommercialOfferPostgresIntegrationTest(
 
             connection.execute(
                 """
+                INSERT INTO trade_locations (
+                    unlocode,
+                    country_id,
+                    subdivision_code,
+                    name,
+                    function_codes,
+                    status,
+                    marked_for_deletion
+                )
+                SELECT
+                    'INTST',
+                    c.id,
+                    'KA',
+                    'OH16 Test Non-Port Location',
+                    '---4----',
+                    'AA',
+                    FALSE
+                FROM countries c
+                WHERE c.iso2 = 'IN'
+                ON CONFLICT (unlocode)
+                DO UPDATE SET
+                    function_codes = EXCLUDED.function_codes,
+                    marked_for_deletion = FALSE
+                """
+            )
+
+
+            connection.execute(
+                """
                 INSERT INTO currencies (
                     code,
                     numeric_code,
@@ -115,11 +144,11 @@ class CommercialOfferPostgresIntegrationTest(
                     marked_for_deletion
                 )
                 SELECT
-                    'INCCU',
+                    'INCOK',
                     c.id,
                     'KL',
                     'Cochin',
-                    '1-------',
+                    '123456--',
                     'AA',
                     FALSE
                 FROM countries c
@@ -439,7 +468,7 @@ class CommercialOfferPostgresIntegrationTest(
                     AND moq_uom.code = 'TNE'
                     AND incoterm.edition = 2020
                     AND incoterm.code = 'FOB'
-                    AND location.unlocode = 'INCCU'
+                    AND location.unlocode = 'INCOK'
                 RETURNING
                     id::text,
                     unit_price::double precision
@@ -658,6 +687,70 @@ class CommercialOfferPostgresIntegrationTest(
                             seller_id,
                             manufacturer_product_id,
                             packaging_other,
+                        ),
+                    )
+
+
+    def test_maritime_offer_rejects_non_port_trade_location(
+        self,
+    ) -> None:
+
+        with psycopg.connect(
+            os.environ[
+                "DATABASE_URL"
+            ]
+        ) as connection:
+
+            (
+                seller_id,
+                _buyer_id,
+                manufacturer_product_id,
+                _packaging_id,
+                _product_id,
+            ) = self._seed(
+                connection,
+                "NONPORT",
+            )
+
+            with self.assertRaises(
+                psycopg.errors.RaiseException
+            ):
+
+                with connection.transaction():
+
+                    connection.execute(
+                        """
+                        INSERT INTO commercial_offers (
+                            seller_organization_id,
+                            manufacturer_product_id,
+                            unit_price,
+                            currency_id,
+                            price_uom_id,
+                            incoterm_rule_id,
+                            named_trade_location_id
+                        )
+                        SELECT
+                            %s,
+                            %s,
+                            1000,
+                            currency.id,
+                            u.id,
+                            incoterm.id,
+                            location.id
+                        FROM currencies currency
+                        CROSS JOIN units_of_measure u
+                        CROSS JOIN incoterm_rules incoterm
+                        CROSS JOIN trade_locations location
+                        WHERE
+                            currency.code = 'USD'
+                            AND u.code = 'TNE'
+                            AND incoterm.edition = 2020
+                            AND incoterm.code = 'FOB'
+                            AND location.unlocode = 'INTST'
+                        """,
+                        (
+                            seller_id,
+                            manufacturer_product_id,
                         ),
                     )
 

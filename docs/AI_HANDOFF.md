@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `0457108c454f0d7055cde5686085314b7d0f530c` — `Add OH15 Product Trade Master proof`  
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
-**Schema head:** `024`
+**Schema head:** `025`
 
 ## Verified state
 
@@ -448,3 +448,9 @@ Incoterm + edition, named place/port, validity and provenance.
 
 Maritime Incoterms require a canonical trade location. Price and MOQ
 UOMs must match the underlying generic Product base-UOM dimension.
+
+
+## OH16.3 — Maritime location integrity
+
+Migration 025 requires maritime Incoterms to reference a canonical
+trade location carrying the UN/LOCODE maritime-port function.

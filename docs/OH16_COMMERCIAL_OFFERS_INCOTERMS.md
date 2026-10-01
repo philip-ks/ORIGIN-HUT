@@ -144,3 +144,18 @@ API:
 - `GET /api/commercial-offers/:id`
 
 Commercial Offer provenance links through `entity_source_links`.
+
+
+## OH16.3 — Maritime named-location integrity
+
+Migration 025 strengthens maritime Incoterm validation.
+
+For FAS, FOB, CFR and CIF, a Commercial Offer must reference a
+canonical UN/LOCODE trade location whose function codes include the
+maritime-port function in position 1.
+
+This prevents a maritime term from being attached to an airport,
+inland-only location or arbitrary location record.
+
+The OH16 test fixture uses the published Cochin/Kochi UN/LOCODE
+`INCOK`.
