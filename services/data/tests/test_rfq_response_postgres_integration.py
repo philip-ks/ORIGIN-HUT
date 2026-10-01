@@ -163,6 +163,18 @@ class RfqResponsePostgresIntegrationTest(
 
         connection.execute(
             """
+            DELETE FROM landed_cost_scenarios
+            WHERE commercial_offer_id IN (
+                SELECT id
+                FROM commercial_offers
+                WHERE offer_reference LIKE
+                    'OH18-RESP-OFFER-%'
+            )
+            """
+        )
+
+        connection.execute(
+            """
             DELETE FROM commercial_offers
             WHERE offer_reference LIKE
                 'OH18-RESP-OFFER-%'
