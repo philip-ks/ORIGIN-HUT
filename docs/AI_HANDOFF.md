@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `f6a56a4fd95a9d20ea4a19fa7e97a1a0ab249f28` — verified OH17 release
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
-**Schema head:** `026`
+**Schema head:** `027`
 
 ## Verified state
 
@@ -588,3 +588,13 @@ reusing the existing canonical Product, Commercial Offer and Landed
 Cost objects.
 
 Schema head remains `026` until the first OH18 migration.
+
+
+## OH18.1 — RFQ foundation
+
+Migration 027 introduces RFQ headers, Product request lines and
+supplier invitations.
+
+RFQ demand stays distinct from Commercial Offer response. Product,
+Manufacturer Product, packaging, UOM, destination, currency and
+Incoterm objects are referenced canonically rather than duplicated.

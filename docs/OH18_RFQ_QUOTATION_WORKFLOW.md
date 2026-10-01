@@ -220,3 +220,59 @@ Buyer in UAE
 
 Synthetic commercial values should be used for the proof unless a
 real source is explicitly supplied.
+
+
+## OH18.1 — RFQ master, lines and supplier invitations
+
+Migration 027 introduces:
+
+- `rfqs`
+- `rfq_lines`
+- `rfq_suppliers`
+
+The RFQ header preserves:
+
+- buyer organization
+- optional requester organization
+- destination country + optional canonical location/site/text
+- optional requested ISO currency
+- optional requested Incoterm rule + edition
+- Incoterm flexibility flag
+- issue date / response deadline
+- workflow status
+- provenance
+
+RFQ lines preserve:
+
+- canonical generic Product
+- optional Manufacturer Product restriction
+- optional packaging restriction
+- requested quantity + canonical UOM
+- target delivery date
+- structured requirement JSON
+- provenance
+
+Supplier invitations preserve:
+
+- canonical supplier organization
+- invitation / acknowledgement / response state
+- invitation / acknowledgement / response timestamps
+- response deadline
+- provenance
+
+Database integrity rules enforce:
+
+- destination location/site country matches RFQ destination country
+- requested UOM dimension matches Product base-UOM dimension
+- Manufacturer Product restriction belongs to the requested Product
+- packaging restriction belongs to the selected Manufacturer Product
+- packaging restriction cannot exist without a Manufacturer Product restriction
+- buyer cannot be invited as its own supplier
+
+API:
+
+- `GET /api/rfqs`
+- `POST /api/rfqs`
+- `GET /api/rfqs/:id`
+- `POST /api/rfqs/:id/lines`
+- `POST /api/rfqs/:id/suppliers`
