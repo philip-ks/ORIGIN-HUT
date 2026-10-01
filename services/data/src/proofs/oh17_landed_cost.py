@@ -246,8 +246,7 @@ def drop_database(
         "postgres",
     )
 
-    last_error:
-        Exception | None = None
+    last_error: Exception | None = None
 
     for attempt in range(
         1,
@@ -831,8 +830,7 @@ def main() -> int:
             "Working tree must be clean before OH17 proof."
         )
 
-    api_process:
-        subprocess.Popen[str] | None = None
+    api_process: subprocess.Popen[str] | None = None
 
     api_stdout_handle = None
     api_stderr_handle = None
