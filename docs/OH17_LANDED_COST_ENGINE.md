@@ -227,3 +227,37 @@ It loads Product-scoped scenarios through the canonical API and shows:
 
 Operational values remain API-backed; the UI contains no hard-coded
 commercial cost values.
+
+
+## OH17.3 — End-to-End Landed Cost proof
+
+Repository-tracked proof runner:
+
+    infra/windows/Run-OH17-Proof.ps1
+
+The proof uses synthetic commercial and costing assumptions only. It
+does not assert a real supplier price, FX rate, customs duty or
+destination charge.
+
+The proof verifies:
+
+```text
+CIF Commercial Offer
+  -> target 20 TNE
+  -> USD scenario
+  -> offer amount USD 23,000
+  -> included insurance USD 500 (no double count)
+  -> added destination handling USD 600
+  -> synthetic 5% duty on explicit USD 23,600 base
+  -> duty USD 1,180
+  -> landed total USD 24,780
+  -> landed cost USD 1,239 / TNE
+```
+
+It also verifies:
+
+- source Commercial Offer remains unchanged
+- explicit cross-currency FX rate/date/source is retained
+- Product-scoped scenario discovery
+- scenario + component provenance
+- production database invariance
