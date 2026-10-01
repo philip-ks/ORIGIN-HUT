@@ -409,3 +409,42 @@ Quotation validation also requires:
 
 This prevents a quotation from citing an unrelated offer or costing
 scenario merely because Product identity happens to match.
+
+
+## OH18.5 — End-to-End RFQ + Quotation proof
+
+Repository-tracked proof runner:
+
+    infra/windows/Run-OH18-Proof.ps1
+
+The proof uses synthetic commercial values only.
+
+It verifies:
+
+```text
+Activated Carbon / HS2022 380210
+  -> UAE buyer RFQ for 20 TNE
+  -> Supplier A invitation
+  -> Supplier B invitation
+  -> Supplier A CIF offer: USD 1,150/TNE
+  -> Supplier B CIF offer: USD 1,100/TNE
+  -> Supplier A landed cost: USD 1,180/TNE
+  -> Supplier B landed cost: USD 1,225/TNE
+  -> comparison selects lower landed-cost basis
+  -> buyer Quotation cites Supplier A response
+  -> explicit 10% markup
+  -> quoted unit price: USD 1,298/TNE
+  -> quoted total: USD 25,960
+```
+
+This demonstrates that a lower supplier offer price does not
+necessarily produce a lower landed cost.
+
+The proof also verifies:
+
+- RFQ response linkage to invited suppliers
+- common-UOM/common-currency comparison
+- quotation source response traceability
+- RFQ / Commercial Offer / Landed Cost immutability
+- RFQ / response / quotation provenance
+- production database invariance
