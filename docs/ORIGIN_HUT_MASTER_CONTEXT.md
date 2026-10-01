@@ -1,10 +1,10 @@
 # Origin Hut — Master Project Context
 
-**Continuity snapshot:** 2026-09-29  
+**Continuity snapshot:** 2026-10-01  
 **Repository:** `philip-ks/ORIGIN-HUT`  
 **Current development branch:** `work/oh15`  
 **Verified OH14.4 implementation commit:** `1de53b5`  
-**Schema head:** `021`
+**Schema head:** `022`
 
 ## Purpose
 
@@ -40,7 +40,7 @@ Python data layer for external connectors, canonicalization, provenance, Postgre
 
 ### `database/migrations`
 
-PostgreSQL/PostGIS canonical schema. Current schema head: migration 021.
+PostgreSQL/PostGIS canonical schema. Current schema head: migration 022.
 
 ### `storage`
 
@@ -158,43 +158,45 @@ Important invariants include immutable source revisions, idempotent canonicaliza
 
 ## Current milestone
 
-OH14 — Counterparty Intelligence — complete and verified.
+OH15 — Product Trade Master — complete and verified.
 
-Completed:
+Implemented and verified:
 
-- OH14.1 trade activity model
-- OH14.2 counterparty API
-- OH14.3 company-web connector
-- OH14.4 alias / identity resolution
-- OH14.5 organization activity/evidence/detail endpoints
-- OH14.6 Product-first Activated Carbon / HS380210 / India-UAE proof
+- generic Product vs Manufacturer Product identity separation
+- canonical Product base UOM
+- safe same-dimension UOM conversion
+- structured generic/manufacturer specifications
+- package-type reference and packaging configurations
+- organization sites and manufacturer-product site relationships
+- explicit Product country of origin
+- Product documents
+- compliance frameworks and Product compliance
+- Product-master provenance hardening
+- Product directory and tabbed Product Workbench UI
+- frontend production build in CI
+- end-to-end disposable-database Product Master proof
 
-OH14.6 established the Product-first chain:
+Final OH15 schema head: migration 022.
+
+OH15 establishes:
 
 ```text
 Product
   -> accepted HS classification
-  -> market evidence
-  -> official company evidence
-  -> product-scoped organization activity
-  -> product-filtered counterparty discovery
-  -> provenance
-```
-
-OH15 — Product Trade Master — in progress.
-
-OH15.1 establishes a strict separation between the generic trade
-Product and a manufacturer's concrete catalogue item/grade/SKU.
-
-```text
-Product
   -> Manufacturer Product
-  -> Packaging
-  -> Commercial Offer
+  -> specifications
+  -> packaging
+  -> manufacturing / origin
+  -> documents / compliance
+  -> provenance
+  -> Product Workbench
 ```
 
-Only the first two layers belong to OH15.1. Incoterms remain outside
-Product and will belong to the later commercial-offer layer.
+The next milestone is OH16 — Commercial Offers + Incoterms.
+
+Commercial pricing and Incoterms must remain outside static Product
+identity. Statistical FOB/CIF values in trade_flow remain statistical
+measures and are not transaction Incoterms.
 
 ## Historical UI note
 

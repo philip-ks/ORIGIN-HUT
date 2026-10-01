@@ -1,8 +1,9 @@
 # OH15 — Product Trade Master
 
 **Branch:** `work/oh15`  
-**Status:** in progress  
-**Starting schema head:** `015`
+**Status:** COMPLETE / VERIFIED  
+**Starting schema head:** `015`  
+**Final schema head:** `022`
 
 ## Purpose
 
@@ -311,3 +312,57 @@ Generic Product
 ```
 
 Production database invariance is checked before and after the proof.
+
+
+## OH15 Verified Closeout
+
+Verified locally on 2026-10-01 with the repository-tracked proof:
+
+    infra/windows/Run-OH15-Proof.ps1
+
+Final result:
+
+```text
+OH15 PRODUCT TRADE MASTER PROOF PASSED
+SCHEMA HEAD 022 PASS
+PRODUCT WORKBENCH BUILD PASS
+GENERIC PRODUCT + BASE UOM PASS
+PRODUCT -> HS2022 380210 PASS
+UOM CONVERSION PASS
+MANUFACTURER PRODUCT + ORIGIN PASS
+STRUCTURED SPECIFICATIONS PASS
+PACKAGING PASS
+MANUFACTURING SITE PASS
+DOCUMENTS + COMPLIANCE PASS
+PRODUCT PROVENANCE PASS
+PRODUCTION DATABASE UNCHANGED
+```
+
+Verified integrated behavior:
+
+- migrations 001-022 apply cleanly
+- API TypeScript typecheck passes
+- API build passes
+- Next.js Product Workbench production build passes
+- disposable API becomes healthy
+- generic Product carries canonical base UOM
+- Product -> HS2022 380210 confirmation persists
+- safe same-dimension UOM conversion works
+- Manufacturer Product remains distinct from generic Product
+- country of origin remains explicit
+- generic and manufacturer-specific specifications remain separate
+- packaging uses canonical physical UOM and package types
+- manufacturing site remains separate from organization country/origin
+- documents and compliance preserve Product subject integrity
+- OH15 entities preserve source provenance through entity_source_links
+- production database remains unchanged
+
+GitHub Actions run #56 on commit `0457108` passed:
+
+- Node / API
+- Python / Data
+- Web build
+
+OH15 is complete.
+
+The next milestone is OH16 — Commercial Offers + Incoterms.

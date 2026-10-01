@@ -20,6 +20,7 @@
 | OH14.4 | `1de53b5` | Organization aliases + conservative identity resolution |
 | OH14.5 | `7e89044` | Organization intelligence detail/evidence APIs |
 | OH14.6 | `0afc1ca` -> `4323065` | Product-first Activated Carbon / HS380210 / India-UAE proof |
+| OH15 | `58f0988` -> `0457108` | Product Trade Master: manufacturer products, UOM, specifications, packaging, sites, compliance, provenance and Product Workbench |
 
 ## Persistent decisions by milestone
 
@@ -139,13 +140,47 @@ Verified proof:
 - production DB remained `11|123982|3`
 - GitHub Actions run #38 passed Node/API and Python/Data
 
+### OH15
+
+Product Trade Master.
+
+Major outcomes:
+
+- migration 016 — Manufacturer Product identity
+- migration 017 — canonical UOM reference/conversion
+- migration 018 — structured Product specifications
+- migration 019 — Product packaging
+- migration 020 — organization sites / manufacturing locations
+- migration 021 — Product documents and compliance
+- migration 022 — Product-master provenance hardening
+- Product API exposes canonical base UOM
+- Product Workbench replaces stock Next.js starter workflow
+- frontend build included in CI
+- end-to-end OH15 proof uses a disposable database and synthetic evidence
+
+Final proof:
+
+- schema head 022 passed
+- Product Workbench build passed
+- generic Product + base UOM passed
+- Product -> HS2022 380210 passed
+- UOM conversion passed
+- Manufacturer Product + origin passed
+- structured specifications passed
+- packaging passed
+- manufacturing site passed
+- documents + compliance passed
+- Product provenance passed
+- production DB unchanged
+- GitHub Actions run #56 passed
+
 ## Next
 
-OH15: Product Trade Master.
+OH16: Commercial Offers + Incoterms.
 
-Product stays at the center. Incoterms are deferred to the
-commercial-offer layer because an Incoterm is transaction/offer
-context, not a static Product attribute.
+Product remains static master data. Commercial Offer owns pricing,
+quantity basis, MOQ, lead time, payment terms, Incoterm, Incoterms
+edition, named place, validity and commercial provenance.
 
 ## Legacy / pre-rebuild history
 

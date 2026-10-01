@@ -1,12 +1,12 @@
 # Origin Hut — AI Development Handoff
 
-**Snapshot:** 2026-09-30  
-**Current milestone:** OH15 — Product Trade Master — IN PROGRESS  
+**Snapshot:** 2026-10-01  
+**Current milestone:** OH15 — Product Trade Master — COMPLETE / VERIFIED  
 **Development branch:** `work/oh15`  
-**Verified implementation HEAD:** `43230651da045a7d5759170d74d28812208e5ade` — `Use unique OH14.6 disposable databases`  
+**Verified implementation HEAD:** `0457108c454f0d7055cde5686085314b7d0f530c` — `Add OH15 Product Trade Master proof`  
 **Base branch:** `main`  
-**Base commit for OH14 lineage:** `9a182e2bd0396dbbc534bcb5ab1fe26e938897fe` — `Add trade market intelligence API`  
-**Schema head:** `021`
+**OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
+**Schema head:** `022`
 
 ## Verified state
 
@@ -373,3 +373,54 @@ identity and automatic `entity_source_links` for all OH15 entities
 that carry `canonical_source_record_id`.
 
 OH15 schema head is now `022`.
+
+
+## OH15 verified closeout
+
+OH15 Product Trade Master was locally proven on 2026-10-01 and
+GitHub Actions run #56 passed on commit `0457108`.
+
+Verified proof:
+
+- schema head 022
+- Product Workbench build
+- generic Product + canonical base UOM
+- Product -> HS2022 380210
+- UOM conversion
+- Manufacturer Product + explicit origin
+- structured specifications
+- packaging
+- manufacturing site
+- documents + compliance
+- unified Product provenance
+- production database unchanged
+
+OH15 is complete.
+
+## Next milestone
+
+OH16 — Commercial Offers + Incoterms.
+
+The canonical rule remains:
+
+```text
+Product != Commercial Offer
+
+Commercial Offer
+  = seller
+  + manufacturer Product / packaging
+  + quantity basis
+  + price
+  + currency
+  + MOQ
+  + lead time
+  + payment terms
+  + Incoterm
+  + Incoterms edition
+  + named place
+  + validity
+  + provenance
+```
+
+Statistical FOB/CIF values in trade_flow remain market statistics and
+must never be treated as transaction Incoterms.
