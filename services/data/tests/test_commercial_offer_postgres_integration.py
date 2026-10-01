@@ -152,6 +152,32 @@ class CommercialOfferPostgresIntegrationTest(
 
         connection.execute(
             """
+            DELETE FROM commercial_offers
+            WHERE manufacturer_product_id IN (
+                SELECT mp.id
+                FROM manufacturer_products mp
+                JOIN products p
+                  ON p.id = mp.product_id
+                WHERE p.name LIKE
+                    'OH16 Commercial Offer Test%'
+            )
+            OR seller_organization_id IN (
+                SELECT id
+                FROM organizations
+                WHERE legal_name LIKE
+                    'OH16 Commercial Offer Test%'
+            )
+            OR buyer_organization_id IN (
+                SELECT id
+                FROM organizations
+                WHERE legal_name LIKE
+                    'OH16 Commercial Offer Test%'
+            )
+            """
+        )
+
+        connection.execute(
+            """
             DELETE FROM products
             WHERE name LIKE
                 'OH16 Commercial Offer Test%'
