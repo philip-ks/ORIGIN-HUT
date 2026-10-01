@@ -123,7 +123,7 @@ jobs:
 
       - name: Verify migration head
         run: |
-          test "$(psql "$DATABASE_URL" -Atc "SELECT MAX(LPAD(version, 10, '0')) FROM schema_migrations;")" = "0000000028"
+          test "$(psql "$DATABASE_URL" -Atc "SELECT MAX(LPAD(version, 10, '0')) FROM schema_migrations;")" = "0000000029"
 
       - name: Compile Python
         run: |

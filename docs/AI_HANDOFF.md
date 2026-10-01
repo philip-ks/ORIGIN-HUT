@@ -6,7 +6,7 @@
 **Verified implementation HEAD:** `f6a56a4fd95a9d20ea4a19fa7e97a1a0ab249f28` — verified OH17 release
 **Base branch:** `main`  
 **OH15 base commit:** `52fc069226ec1e301287a070e24b47e3a8672cf7` — verified OH14 release  
-**Schema head:** `028`
+**Schema head:** `029`
 
 ## Verified state
 
@@ -605,3 +605,11 @@ Incoterm objects are referenced canonically rather than duplicated.
 Migration 028 links RFQ line + invited supplier to a canonical
 Commercial Offer. Offer pricing/Incoterm/packaging remain in the
 Commercial Offer rather than being duplicated into RFQ response data.
+
+
+## OH18.3 — Response comparison
+
+Migration 029 adds a derived RFQ response comparison read model.
+Responses remain visible when comparison inputs are incomplete, but
+Origin Hut marks them non-comparable instead of inventing FX,
+destination costing or quantity assumptions.

@@ -41,6 +41,10 @@ import {
 } from "./routes/rfq-responses.js";
 
 import {
+  rfqComparisonRoutes
+} from "./routes/rfq-comparison.js";
+
+import {
   specificationRoutes
 } from "./routes/specifications.js";
 
@@ -133,6 +137,10 @@ await app.register(
 
 await app.register(
   rfqResponseRoutes
+);
+
+await app.register(
+  rfqComparisonRoutes
 );
 
 await app.register(

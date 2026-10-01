@@ -604,6 +604,91 @@ class RfqResponsePostgresIntegrationTest(
             )
 
 
+            scenario_id = connection.execute(
+                """
+                INSERT INTO landed_cost_scenarios (
+                    commercial_offer_id,
+                    scenario_reference,
+                    status,
+                    target_quantity,
+                    target_uom_id,
+                    scenario_currency_id,
+                    destination_country_id,
+                    destination_trade_location_id
+                )
+                SELECT
+                    %s,
+                    'OH18-RESP-COMPARE-VALID',
+                    'calculated',
+                    20,
+                    u.id,
+                    currency.id,
+                    country.id,
+                    location.id
+                FROM units_of_measure u
+                CROSS JOIN currencies currency
+                CROSS JOIN countries country
+                CROSS JOIN trade_locations location
+                WHERE
+                    u.code = 'TNE'
+                    AND currency.code = 'USD'
+                    AND country.iso2 = 'AE'
+                    AND location.unlocode = 'AEJEA'
+                RETURNING id
+                """,
+                (
+                    ids[
+                        "offer_id"
+                    ],
+                ),
+            ).fetchone()[0]
+
+            comparison = connection.execute(
+                """
+                SELECT
+                    is_comparable,
+                    comparison_reason,
+                    landed_cost_scenario_id,
+                    landed_cost_per_requested_uom::double precision
+                FROM rfq_response_comparison
+                WHERE
+                    rfq_id = %s
+                    AND commercial_offer_id = %s
+                """,
+                (
+                    ids[
+                        "rfq_id"
+                    ],
+                    ids[
+                        "offer_id"
+                    ],
+                ),
+            ).fetchone()
+
+            self.assertTrue(
+                comparison[0]
+            )
+
+            self.assertEqual(
+                comparison[1],
+                "comparable",
+            )
+
+            self.assertEqual(
+                str(
+                    comparison[2]
+                ),
+                str(
+                    scenario_id
+                ),
+            )
+
+            self.assertEqual(
+                comparison[3],
+                1150.0,
+            )
+
+
     def test_response_rejects_offer_from_uninvited_supplier(
         self,
     ) -> None:

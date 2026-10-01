@@ -311,3 +311,35 @@ API:
 
 - `GET /api/rfqs/:id/responses`
 - `POST /api/rfqs/:id/responses`
+
+
+## OH18.3 — Offer comparison read model
+
+Migration 029 introduces `rfq_response_comparison`.
+
+Comparison is derived from:
+
+- RFQ line demand
+- submitted supplier response
+- canonical Commercial Offer
+- a matching calculated Landed Cost Scenario
+
+A Landed Cost Scenario is considered comparison-ready only when:
+
+- it belongs to the response Commercial Offer
+- it is calculated
+- its scenario currency matches the RFQ requested currency
+- its destination country matches the RFQ destination
+- its target quantity normalizes to the RFQ requested quantity
+
+If those conditions are not met, the response remains visible but is
+marked non-comparable. Origin Hut does not fabricate FX or cost data.
+
+The comparison normalizes:
+
+- offer price per RFQ requested UOM in the offer currency
+- landed cost per RFQ requested UOM in the RFQ requested currency
+
+API:
+
+- `GET /api/rfqs/:id/comparison`
